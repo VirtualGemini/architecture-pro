@@ -28,6 +28,8 @@ public class SaTokenConfig implements WebMvcConfigurer {
         addAuthExclude(excludes, "/login");
         addAuthExclude(excludes, "/captcha");
         addAuthExclude(excludes, "/register");
+        addAuthExclude(excludes, "/forgot-password/code");
+        addAuthExclude(excludes, "/forgot-password/reset");
         addPublicFileDownloadExclude(excludes);
 
         if (securityProperties.isSwaggerPublicEnabled()) {
@@ -57,6 +59,15 @@ public class SaTokenConfig implements WebMvcConfigurer {
         String apiPrefix = normalizePrefix(architectureProProperties.getApiPrefix());
         if (!apiPrefix.isEmpty()) {
             excludes.add(apiPrefix + "/file/*/get/**");
+        }
+    }
+
+    private void addCustomExclude(List<String> excludes, String path) {
+        excludes.add(path);
+
+        String apiPrefix = normalizePrefix(architectureProProperties.getApiPrefix());
+        if (!apiPrefix.isEmpty()) {
+            excludes.add(apiPrefix + path);
         }
     }
 

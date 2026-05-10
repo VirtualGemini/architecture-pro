@@ -20,6 +20,7 @@ public class SecurityProperties {
     private final Login login = new Login();
 
     private final Captcha captcha = new Captcha();
+    private final Verification verification = new Verification();
 
     private final Cors cors = new Cors();
 
@@ -41,6 +42,10 @@ public class SecurityProperties {
 
     public Captcha getCaptcha() {
         return captcha;
+    }
+
+    public Verification getVerification() {
+        return verification;
     }
 
     public Cors getCors() {
@@ -167,6 +172,47 @@ public class SecurityProperties {
 
         public void setMaxCacheSize(int maxCacheSize) {
             this.maxCacheSize = maxCacheSize;
+        }
+    }
+
+    public static class Verification {
+        /**
+         * 验证码摘要加密密钥，建议通过环境变量注入
+         */
+        private String secret = "change-this-verification-secret";
+
+        /**
+         * 忘记密码验证码有效期（秒）
+         */
+        private int resetCodeTtlSeconds = 600;
+
+        /**
+         * 忘记密码验证码重复发送间隔（秒）
+         */
+        private int resetCodeResendIntervalSeconds = 60;
+
+        public String getSecret() {
+            return secret;
+        }
+
+        public void setSecret(String secret) {
+            this.secret = secret;
+        }
+
+        public int getResetCodeTtlSeconds() {
+            return resetCodeTtlSeconds;
+        }
+
+        public void setResetCodeTtlSeconds(int resetCodeTtlSeconds) {
+            this.resetCodeTtlSeconds = resetCodeTtlSeconds;
+        }
+
+        public int getResetCodeResendIntervalSeconds() {
+            return resetCodeResendIntervalSeconds;
+        }
+
+        public void setResetCodeResendIntervalSeconds(int resetCodeResendIntervalSeconds) {
+            this.resetCodeResendIntervalSeconds = resetCodeResendIntervalSeconds;
         }
     }
 

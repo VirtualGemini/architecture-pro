@@ -5,21 +5,43 @@ spring:
     url: jdbc:mysql://localhost:3306/architecture_pro?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT&allowPublicKeyRetrieval=true
     username: root
     password: root
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      database: 0
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
 
 logging:
   level:
-    com.architecturepro: DEBUG
+    root: WARN
+    com.architecturepro: INFO
   file:
-    path: ./logs
+    path: /var/log/architecture-pro
 
 architecture-pro:
   security:
-    swagger-public-enabled: true
+    swagger-public-enabled: false
+    cors:
+      allowed-origin-patterns: ${CORS_ALLOWED_ORIGINS:https://example.com}
+    verification:
+      # 验证码 HMAC 摘要密钥，生产环境必须通过安全环境变量注入
+      secret: ${VERIFICATION_SECRET}
+      # 邮件重置验证码有效期（秒）
+      reset-code-ttl-seconds: 600
+      # 邮件重置验证码重复发送间隔（秒）
+      reset-code-resend-interval-seconds: 60
 
 vg:
   # 轻量邮件模块配置
   lite-email:
-    # 是否启用邮件模块；开启后需保证 sender/password 可用
+    # 生产环境通过环境变量控制启停
     enabled: ${MAIL_ENABLED:false}
     # 发件邮箱地址，例如 no-reply@example.com
     sender: ${MAIL_SENDER:}
@@ -33,7 +55,7 @@ vg:
       # JDK 25 下默认使用虚拟线程提升并发能力
       virtual-threads: true
       # 最大并发发送任务数
-      concurrency-limit: 256
+      concurrency-limit: ${MAIL_CONCURRENCY_LIMIT:512}
       # 异步线程名前缀，便于排查日志
       thread-name-prefix: vg-email-
     retries:

@@ -2,8 +2,10 @@ package com.architecturepro.infrastructure.web.auth.controller;
 
 import com.architecturepro.common.result.Result;
 import com.architecturepro.infrastructure.web.auth.dto.CaptchaDTO;
+import com.architecturepro.infrastructure.web.auth.dto.ForgotPasswordCodeCommand;
 import com.architecturepro.infrastructure.web.auth.dto.LoginCommand;
 import com.architecturepro.infrastructure.web.auth.dto.RegisterCommand;
+import com.architecturepro.infrastructure.web.auth.dto.ResetPasswordCommand;
 import com.architecturepro.infrastructure.web.auth.dto.TokenDTO;
 import com.architecturepro.infrastructure.web.auth.service.LoginService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +40,20 @@ public class LoginController {
     @PostMapping("/register")
     public Result<Void> register(@Valid @RequestBody RegisterCommand command) {
         loginService.register(command);
+        return Result.ok();
+    }
+
+    @Operation(summary = "发送找回密码验证码")
+    @PostMapping("/forgot-password/code")
+    public Result<Void> sendResetPasswordCode(@Valid @RequestBody ForgotPasswordCodeCommand command) {
+        loginService.sendResetPasswordCode(command);
+        return Result.ok();
+    }
+
+    @Operation(summary = "通过邮箱验证码重置密码")
+    @PostMapping("/forgot-password/reset")
+    public Result<Void> resetPassword(@Valid @RequestBody ResetPasswordCommand command) {
+        loginService.resetPassword(command);
         return Result.ok();
     }
 

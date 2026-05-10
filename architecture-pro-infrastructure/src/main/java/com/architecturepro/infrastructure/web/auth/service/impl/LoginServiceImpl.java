@@ -2,8 +2,10 @@ package com.architecturepro.infrastructure.web.auth.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.RandomUtil;
 import com.architecturepro.common.exception.ApiException;
 import com.architecturepro.common.exception.BusinessErrorCode;
+import com.architecturepro.email.core.EmailBuilder;
 import com.architecturepro.domain.model.Profile;
 import com.architecturepro.domain.model.Role;
 import com.architecturepro.domain.model.User;
@@ -15,21 +17,18 @@ import com.architecturepro.infrastructure.persistence.RoleMapper;
 import com.architecturepro.infrastructure.persistence.UserRoleMapper;
 import com.architecturepro.infrastructure.persistence.UserMapper;
 import com.architecturepro.infrastructure.web.auth.dto.CaptchaDTO;
+import com.architecturepro.infrastructure.web.auth.dto.ForgotPasswordCodeCommand;
 import com.architecturepro.infrastructure.web.auth.dto.LoginCommand;
 import com.architecturepro.infrastructure.web.auth.dto.RegisterCommand;
+import com.architecturepro.infrastructure.web.auth.dto.ResetPasswordCommand;
 import com.architecturepro.infrastructure.web.auth.dto.TokenDTO;
 import com.architecturepro.infrastructure.web.auth.service.LoginService;
 import com.architecturepro.infrastructure.web.auth.service.PasswordCipherService;
 import com.wf.captcha.SpecCaptcha;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 @Service
 public class LoginServiceImpl implements LoginService {
-
-    private static final Map<String, CaptchaEntry> CAPTCHA_CACHE = new ConcurrentHashMap<>();
 
     private final UserMapper userMapper;
     private final ProfileMapper profileMapper;
@@ -38,6 +37,8 @@ public class LoginServiceImpl implements LoginService {
     private final PasswordCipherService passwordCipherService;
     private final SecurityProperties securityProperties;
     private final BusinessIdGenerator businessIdGenerator;
+    private final EmailBuilder emailBuilder;
+    private final VerificationCodeStore verificationCodeStore;
 
     public LoginServiceImpl(UserMapper userMapper,
                             ProfileMapper profileMapper,
@@ -45,7 +46,9 @@ public class LoginServiceImpl implements LoginService {
                             UserRoleMapper userRoleMapper,
                             PasswordCipherService passwordCipherService,
                             SecurityProperties securityProperties,
-                            BusinessIdGenerator businessIdGenerator) {
+                            BusinessIdGenerator businessIdGenerator,
+                            EmailBuilder emailBuilder,
+                            VerificationCodeStore verificationCodeStore) {
         this.userMapper = userMapper;
         this.profileMapper = profileMapper;
         this.roleMapper = roleMapper;
@@ -53,20 +56,18 @@ public class LoginServiceImpl implements LoginService {
         this.passwordCipherService = passwordCipherService;
         this.securityProperties = securityProperties;
         this.businessIdGenerator = businessIdGenerator;
+        this.emailBuilder = emailBuilder;
+        this.verificationCodeStore = verificationCodeStore;
     }
 
     @Override
     public CaptchaDTO generateCaptcha() {
-        clearExpiredCaptcha();
-        evictIfCacheTooLarge();
-
         CaptchaDTO dto = new CaptchaDTO();
         dto.setIsCaptchaOn(true);
 
         SpecCaptcha specCaptcha = new SpecCaptcha(120, 40, 4);
         String key = IdUtil.simpleUUID();
-        long expireAt = System.currentTimeMillis() + securityProperties.getCaptcha().getTtlSeconds() * 1000L;
-        CAPTCHA_CACHE.put(key, new CaptchaEntry(specCaptcha.text().toLowerCase(), expireAt));
+        verificationCodeStore.saveCaptcha(key, specCaptcha.text());
 
         dto.setCaptchaCodeKey(key);
         dto.setCaptchaCodeImg(specCaptcha.toBase64());
@@ -169,6 +170,66 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
+    public void sendResetPasswordCode(ForgotPasswordCodeCommand command) {
+        String email = normalizeEmail(command.getEmail());
+        if (email == null) {
+            throw new ApiException(BusinessErrorCode.EMAIL_REQUIRED);
+        }
+
+        User user = findUserByEmail(email);
+        if (user == null) {
+            throw new ApiException(BusinessErrorCode.EMAIL_NOT_BOUND);
+        }
+
+        if (!verificationCodeStore.canSendResetCode(email)) {
+            throw new ApiException(BusinessErrorCode.RESET_CODE_SEND_TOO_FREQUENT);
+        }
+
+        String code = RandomUtil.randomNumbers(6);
+        verificationCodeStore.saveResetCode(email, code);
+
+        emailBuilder.to(email)
+                .subject("密码重置验证码")
+                .text(buildResetPasswordMailContent(user.getUsername(), code))
+                .async()
+                .send();
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordCommand command) {
+        String email = normalizeEmail(command.getEmail());
+        if (email == null) {
+            throw new ApiException(BusinessErrorCode.EMAIL_REQUIRED);
+        }
+        if (!command.getNewPassword().equals(command.getConfirmPassword())) {
+            throw new ApiException(BusinessErrorCode.PASSWORD_MISMATCH);
+        }
+
+        User user = findUserByEmail(email);
+        if (user == null) {
+            throw new ApiException(BusinessErrorCode.EMAIL_NOT_BOUND);
+        }
+
+        VerificationCodeStore.VerificationResult verificationResult =
+                verificationCodeStore.verifyResetCode(email, command.getCode());
+        if (verificationResult == VerificationCodeStore.VerificationResult.EXPIRED) {
+            throw new ApiException(BusinessErrorCode.RESET_CODE_EXPIRED);
+        }
+        if (verificationResult == VerificationCodeStore.VerificationResult.INVALID) {
+            throw new ApiException(BusinessErrorCode.RESET_CODE_ERROR);
+        }
+
+        if (passwordCipherService.matches(command.getNewPassword(), user.getPassword())) {
+            throw new ApiException(BusinessErrorCode.PASSWORD_SAME_AS_OLD);
+        }
+
+        user.setPassword(passwordCipherService.encode(command.getNewPassword().trim()));
+        user.setLoginFailCount(0);
+        user.setLoginFailTime(null);
+        userMapper.updateById(user);
+    }
+
+    @Override
     public void logout() {
         StpUtil.logout();
     }
@@ -185,12 +246,10 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.CAPTCHA_ERROR);
         }
 
-        CaptchaEntry entry = CAPTCHA_CACHE.remove(key);
-        if (entry == null || entry.expireAt() < System.currentTimeMillis()) {
+        if (!verificationCodeStore.captchaExists(key)) {
             throw new ApiException(BusinessErrorCode.CAPTCHA_EXPIRED);
         }
-
-        if (!entry.answer().equalsIgnoreCase(captchaCode)) {
+        if (!verificationCodeStore.consumeCaptcha(key, captchaCode)) {
             throw new ApiException(BusinessErrorCode.CAPTCHA_ERROR);
         }
     }
@@ -236,23 +295,32 @@ public class LoginServiceImpl implements LoginService {
         userMapper.updateById(user);
     }
 
-    private void clearExpiredCaptcha() {
-        long now = System.currentTimeMillis();
-        CAPTCHA_CACHE.entrySet().removeIf(entry -> entry.getValue().expireAt() < now);
-    }
-
-    private void evictIfCacheTooLarge() {
-        int maxCacheSize = securityProperties.getCaptcha().getMaxCacheSize();
-        if (maxCacheSize > 0 && CAPTCHA_CACHE.size() >= maxCacheSize) {
-            CAPTCHA_CACHE.clear();
-        }
-    }
-
-    private record CaptchaEntry(String answer, long expireAt) {
-    }
-
     private String buildDefaultAvatar(String username) {
         String seed = username == null || username.isBlank() ? "user" : username.trim();
         return "https://api.dicebear.com/7.x/avataaars/svg?seed=" + seed;
+    }
+
+    private User findUserByEmail(String email) {
+        return userMapper.selectOne(
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<User>()
+                        .eq(User::getDeleted, 0)
+                        .eq(User::getEmail, email)
+                        .last("limit 1")
+        );
+    }
+
+    private String normalizeEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return null;
+        }
+        return email.trim().toLowerCase();
+    }
+
+    private String buildResetPasswordMailContent(String username, String code) {
+        return "您好，" + username + "：\n\n"
+                + "您正在执行忘记密码操作。\n"
+                + "本次密码重置验证码为：" + code + "\n"
+                + "验证码 10 分钟内有效，请勿泄露给他人。\n\n"
+                + "如果这不是您的操作，请忽略本邮件。";
     }
 }

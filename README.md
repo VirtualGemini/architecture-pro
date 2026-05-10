@@ -175,6 +175,13 @@ vg:
 - `virtual-threads`：开启后使用 JDK 25 虚拟线程执行异步发信
 - 未显式配置 `host/port` 时，会按邮箱域名自动推断 SMTP 服务
 
+### 验证码存储
+
+- 登录图形验证码与忘记密码邮件验证码均使用 Redis 存储
+- Redis 中保存的是基于 `architecture-pro.security.verification.secret` 计算后的 HMAC-SHA256 摘要，不保存明文验证码
+- 忘记密码验证码默认 10 分钟有效，60 秒内限制重复发送
+- 生产环境务必通过环境变量设置 `VERIFICATION_SECRET`
+
 ## 开发规范
 
 详见 `DEVELOPMENT_SPEC.md`。

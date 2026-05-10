@@ -40,6 +40,11 @@ public enum BusinessErrorCode implements ErrorCode {
     USER_ALREADY_EXISTS(12009, "用户已存在"),
     ACCOUNT_LOCKED(12010, "账号已被锁定，请稍后重试"),
     PASSWORD_SAME_AS_OLD(12011, "新密码不能与当前密码相同"),
+    EMAIL_REQUIRED(12012, "邮箱不能为空"),
+    EMAIL_NOT_BOUND(12013, "该邮箱未绑定任何账号"),
+    RESET_CODE_ERROR(12014, "重置验证码错误"),
+    RESET_CODE_EXPIRED(12015, "重置验证码已过期"),
+    RESET_CODE_SEND_TOO_FREQUENT(12016, "验证码发送过于频繁，请稍后重试"),
 
     // ---- 文件模块 (13000-13999) ----
     FILE_UPLOAD_FAILED(13000, "文件上传失败"),

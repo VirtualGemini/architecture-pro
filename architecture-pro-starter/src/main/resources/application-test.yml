@@ -5,6 +5,11 @@ spring:
     url: jdbc:mysql://localhost:3306/architecture_pro_test?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT&allowPublicKeyRetrieval=true
     username: root
     password: root
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 1
 
 logging:
   level:
@@ -15,6 +20,13 @@ logging:
 architecture-pro:
   security:
     swagger-public-enabled: true
+    verification:
+      # 验证码 HMAC 摘要密钥，测试环境建议通过环境变量覆盖
+      secret: ${VERIFICATION_SECRET:change-this-verification-secret}
+      # 邮件重置验证码有效期（秒）
+      reset-code-ttl-seconds: 600
+      # 邮件重置验证码重复发送间隔（秒）
+      reset-code-resend-interval-seconds: 60
 
 vg:
   # 测试环境默认关闭邮件模块，避免误发真实邮件
