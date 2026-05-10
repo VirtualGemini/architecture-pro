@@ -18,6 +18,10 @@
             <groupId>com.architecturepro</groupId>
             <artifactId>architecture-pro-infrastructure</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.architecturepro</groupId>
+            <artifactId>architecture-pro-email</artifactId>
+        </dependency>
 
         <!-- Spring Boot DevTools -->
         <dependency>

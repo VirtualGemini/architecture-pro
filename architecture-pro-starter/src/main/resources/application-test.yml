@@ -15,3 +15,9 @@ logging:
 architecture-pro:
   security:
     swagger-public-enabled: true
+
+vg:
+  # 测试环境默认关闭邮件模块，避免误发真实邮件
+  lite-email:
+    # 是否启用邮件模块
+    enabled: false

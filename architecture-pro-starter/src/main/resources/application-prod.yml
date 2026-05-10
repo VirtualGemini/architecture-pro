@@ -24,3 +24,36 @@ architecture-pro:
     swagger-public-enabled: false
     cors:
       allowed-origin-patterns: ${CORS_ALLOWED_ORIGINS:https://example.com}
+
+vg:
+  # 轻量邮件模块配置
+  lite-email:
+    # 生产环境通过环境变量控制启停
+    enabled: ${MAIL_ENABLED:false}
+    # 发件邮箱地址，例如 no-reply@example.com
+    sender: ${MAIL_SENDER:}
+    # 发件邮箱授权码或 SMTP 密码
+    password: ${MAIL_PASSWORD:}
+    # 是否启用 SSL；未显式配置 host/port 时会按邮箱域名自动推断
+    ssl: ${MAIL_SSL:true}
+    async:
+      # 是否开启异步发送
+      enabled: true
+      # JDK 25 下默认使用虚拟线程提升并发能力
+      virtual-threads: true
+      # 最大并发发送任务数
+      concurrency-limit: ${MAIL_CONCURRENCY_LIMIT:512}
+      # 异步线程名前缀，便于排查日志
+      thread-name-prefix: vg-email-
+    retries:
+      # 默认重试次数；业务未显式指定时生效
+      global-retries: 1
+      # 全局允许的最大重试次数上限
+      max-retries: 3
+      # 首次重试延迟，后续按指数退避递增，单位毫秒
+      initial-delay: 1000
+    logging:
+      # 是否输出邮件模块日志
+      enabled: true
+      # 日志级别：ERROR/WARN/INFO/DEBUG
+      level: INFO
