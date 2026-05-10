@@ -1,0 +1,17 @@
+# 开发环境配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/architecture_pro?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+
+logging:
+  level:
+    com.architecturepro: DEBUG
+  file:
+    path: ./logs
+
+architecture-pro:
+  security:
+    swagger-public-enabled: true

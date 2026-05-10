@@ -1,0 +1,96 @@
+package com.architecturepro.common.exception;
+
+/**
+ * 业务错误码（10000-99999）
+ * <p>
+ * 业务逻辑相关的错误，按模块分段：
+ * <ul>
+ *   <li>10000-10999: 通用业务</li>
+ *   <li>11000-11999: 用户模块</li>
+ *   <li>12000-12999: 认证模块</li>
+ *   <li>13000-13999: 文件模块</li>
+ *   <li>20000+: 其他业务模块</li>
+ * </ul>
+ */
+public enum BusinessErrorCode implements ErrorCode {
+
+    // ---- 通用业务 (10000-10999) ----
+    BUSINESS_ERROR(10000, "业务处理异常"),
+    OPERATION_FAILED(10001, "操作失败"),
+    DATA_NOT_FOUND(10002, "数据不存在"),
+    DATA_ALREADY_EXISTS(10003, "数据已存在"),
+    DATA_IN_USE(10004, "数据正在使用中，无法删除"),
+
+    // ---- 用户模块 (11000-11999) ----
+    USER_NOT_FOUND(11000, "用户不存在"),
+    USER_DISABLED(11001, "用户已被禁用"),
+    USER_PASSWORD_ERROR(11002, "密码错误"),
+    USER_PASSWORD_EXPIRED(11003, "密码已过期"),
+
+    // ---- 认证模块 (12000-12999) ----
+    TOKEN_INVALID(12000, "Token无效"),
+    TOKEN_EXPIRED(12001, "Token已过期"),
+    REFRESH_TOKEN_INVALID(12002, "刷新Token无效"),
+    LOGIN_FAILED(12003, "登录失败"),
+    CAPTCHA_ERROR(12004, "验证码错误"),
+    CAPTCHA_EXPIRED(12005, "验证码已过期"),
+    PASSWORD_ERROR(12006, "密码错误"),
+    ACCOUNT_DISABLED(12007, "账号已被禁用"),
+    PASSWORD_MISMATCH(12008, "两次密码输入不一致"),
+    USER_ALREADY_EXISTS(12009, "用户已存在"),
+    ACCOUNT_LOCKED(12010, "账号已被锁定，请稍后重试"),
+    PASSWORD_SAME_AS_OLD(12011, "新密码不能与当前密码相同"),
+
+    // ---- 文件模块 (13000-13999) ----
+    FILE_UPLOAD_FAILED(13000, "文件上传失败"),
+    FILE_NOT_FOUND(13001, "文件不存在"),
+    FILE_TYPE_NOT_ALLOWED(13002, "文件类型不允许"),
+    FILE_CONFIG_NOT_FOUND(13003, "文件配置不存在"),
+    FILE_CONFIG_DELETE_FAIL_MASTER(13004, "不能删除主配置"),
+    FILE_STORAGE_ERROR(13005, "文件存储服务异常"),
+    FILE_PATH_REQUIRED(13006, "结尾的 path 路径必须传递"),
+    FILE_CONFIG_INVALID(13007, "文件配置不合法: %s"),
+    FILE_STORAGE_TYPE_UNSUPPORTED(13008, "不支持的存储类型: %s"),
+
+    // ---- 权限模块 (20000-20999) ----
+    ROLE_NOT_FOUND(20000, "角色不存在"),
+    ROLE_REQUIRED(20001, "至少选择一个角色"),
+    ROLE_INVALID(20002, "存在无效角色，请刷新后重试"),
+
+    // ---- 菜单模块 (21000-21999) ----
+    MENU_TYPE_INVALID(21000, "菜单类型只能是 menu 或 button"),
+    MENU_BUTTON_PARENT_INVALID(21001, "按钮必须挂载在菜单下"),
+    MENU_PATH_REQUIRED(21002, "菜单路由地址不能为空"),
+    MENU_AUTH_MARK_REQUIRED(21003, "权限标识不能为空"),
+    MENU_PARENT_REQUIRED(21004, "父级菜单不能为空"),
+
+    // ---- 用户管理模块 (22000-22999) ----
+    USER_PASSWORD_REQUIRED_FOR_CREATE(22000, "新增用户时密码不能为空"),
+    ;
+
+    private final int code;
+    private final String message;
+
+    BusinessErrorCode(int code, String message) {
+        assertRange(code, 10000, 99999);
+        this.code = code;
+        this.message = message;
+    }
+
+    @Override
+    public int code() {
+        return code;
+    }
+
+    @Override
+    public String message() {
+        return message;
+    }
+
+    private static void assertRange(int code, int min, int max) {
+        if (code < min || code > max) {
+            throw new IllegalArgumentException(
+                    "Business error code must be in range [" + min + ", " + max + "], got: " + code);
+        }
+    }
+}

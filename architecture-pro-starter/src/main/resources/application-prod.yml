@@ -1,0 +1,26 @@
+# 生产环境配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/architecture_pro_prod?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=GMT
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+logging:
+  level:
+    root: WARN
+    com.architecturepro: INFO
+  file:
+    path: /var/log/architecture-pro
+
+architecture-pro:
+  security:
+    swagger-public-enabled: false
+    cors:
+      allowed-origin-patterns: ${CORS_ALLOWED_ORIGINS:https://example.com}

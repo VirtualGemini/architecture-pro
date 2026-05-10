@@ -1,0 +1,299 @@
+package com.architecturepro.infrastructure.web.user.service.impl;
+
+import cn.dev33.satoken.stp.StpUtil;
+import com.architecturepro.common.exception.ApiException;
+import com.architecturepro.common.exception.BusinessErrorCode;
+import com.architecturepro.domain.model.CurrentUserInfo;
+import com.architecturepro.domain.model.Menu;
+import com.architecturepro.domain.model.Profile;
+import com.architecturepro.domain.model.User;
+import com.architecturepro.infrastructure.persistence.MenuMapper;
+import com.architecturepro.infrastructure.persistence.ProfileMapper;
+import com.architecturepro.infrastructure.persistence.UserMapper;
+import com.architecturepro.infrastructure.persistence.support.MenuQuerySupport;
+import com.architecturepro.infrastructure.id.BusinessIdGenerator;
+import com.architecturepro.infrastructure.web.auth.service.PasswordCipherService;
+import com.architecturepro.infrastructure.web.permission.service.PermissionService;
+import com.architecturepro.infrastructure.web.user.dto.UserPasswordUpdateCommand;
+import com.architecturepro.infrastructure.web.user.dto.UserInfoDTO;
+import com.architecturepro.infrastructure.web.user.dto.UserProfileUpdateCommand;
+import com.architecturepro.infrastructure.web.user.service.UserInfoService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+public class UserInfoServiceImpl implements UserInfoService {
+
+    private final UserMapper userMapper;
+    private final ProfileMapper profileMapper;
+    private final PermissionService permissionService;
+    private final MenuMapper menuMapper;
+    private final PasswordCipherService passwordCipherService;
+    private final BusinessIdGenerator businessIdGenerator;
+    private final ObjectMapper objectMapper;
+
+    public UserInfoServiceImpl(
+            UserMapper userMapper,
+            ProfileMapper profileMapper,
+            PermissionService permissionService,
+            MenuMapper menuMapper,
+            PasswordCipherService passwordCipherService,
+            BusinessIdGenerator businessIdGenerator,
+            ObjectMapper objectMapper
+    ) {
+        this.userMapper = userMapper;
+        this.profileMapper = profileMapper;
+        this.permissionService = permissionService;
+        this.menuMapper = menuMapper;
+        this.passwordCipherService = passwordCipherService;
+        this.businessIdGenerator = businessIdGenerator;
+        this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public CurrentUserInfo getCurrentUserInfo() {
+        String userId = StpUtil.getLoginIdAsString();
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new ApiException(BusinessErrorCode.USER_NOT_FOUND);
+        }
+        Profile profile = getActiveProfile(userId);
+
+        CurrentUserInfo currentUserInfo = new CurrentUserInfo();
+        currentUserInfo.setUserId(user.getId());
+        currentUserInfo.setUserName(user.getUsername());
+        currentUserInfo.setEmail(user.getEmail() == null ? "" : user.getEmail());
+        currentUserInfo.setPhone(user.getPhone() == null ? "" : user.getPhone());
+        currentUserInfo.setAvatar(resolveAvatar(profile, user.getUsername()));
+        currentUserInfo.setNickname(profile == null ? "" : defaultString(profile.getNickname()));
+        currentUserInfo.setGender(profile == null ? 0 : normalizeGender(profile.getGender()));
+        currentUserInfo.setRealName(profile == null ? "" : defaultString(profile.getRealName()));
+        currentUserInfo.setAddress(profile == null ? "" : defaultString(profile.getAddress()));
+        currentUserInfo.setIntroduction(profile == null ? "" : defaultString(profile.getIntroduction()));
+        currentUserInfo.setSignature(profile == null ? "" : defaultString(profile.getSignature()));
+        currentUserInfo.setPosition(profile == null ? "" : defaultString(profile.getPosition()));
+        currentUserInfo.setCompany(profile == null ? "" : defaultString(profile.getCompany()));
+        currentUserInfo.setTags(parseTags(profile == null ? null : profile.getTags()));
+        currentUserInfo.setRoles(permissionService.getUserRoleCodes(userId));
+        currentUserInfo.setButtons(getCurrentButtons(userId));
+        return currentUserInfo;
+    }
+
+    @Override
+    public UserInfoDTO getUserInfoDTO() {
+        CurrentUserInfo currentUserInfo = getCurrentUserInfo();
+        UserInfoDTO dto = new UserInfoDTO();
+        dto.setUserId(currentUserInfo.getUserId());
+        dto.setUserName(currentUserInfo.getUserName());
+        dto.setEmail(currentUserInfo.getEmail());
+        dto.setPhone(currentUserInfo.getPhone());
+        dto.setAvatar(currentUserInfo.getAvatar());
+        dto.setNickname(currentUserInfo.getNickname());
+        dto.setGender(currentUserInfo.getGender());
+        dto.setRealName(currentUserInfo.getRealName());
+        dto.setAddress(currentUserInfo.getAddress());
+        dto.setIntroduction(currentUserInfo.getIntroduction());
+        dto.setSignature(currentUserInfo.getSignature());
+        dto.setPosition(currentUserInfo.getPosition());
+        dto.setCompany(currentUserInfo.getCompany());
+        dto.setTags(currentUserInfo.getTags());
+        dto.setRoles(currentUserInfo.getRoles());
+        dto.setButtons(currentUserInfo.getButtons());
+        return dto;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateCurrentUserProfile(UserProfileUpdateCommand command) {
+        String userId = StpUtil.getLoginIdAsString();
+        User user = requireCurrentUser(userId);
+        Profile profile = getOrInitProfile(user, currentOperator());
+
+        user.setEmail(normalizeNullable(command.getEmail()));
+        user.setPhone(command.getPhone().trim());
+        user.setUpdateBy(currentOperator());
+        userMapper.updateById(user);
+
+        profile.setNickname(command.getNickname().trim());
+        profile.setRealName(command.getRealName().trim());
+        profile.setAddress(normalizeNullable(command.getAddress()));
+        profile.setGender(normalizeGender(command.getGender()));
+        profile.setIntroduction(normalizeNullable(command.getIntroduction()));
+        profile.setUpdateBy(currentOperator());
+        saveProfile(profile);
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateCurrentUserPassword(UserPasswordUpdateCommand command) {
+        if (!Objects.equals(command.getNewPassword(), command.getConfirmPassword())) {
+            throw new ApiException(BusinessErrorCode.PASSWORD_MISMATCH);
+        }
+
+        String userId = StpUtil.getLoginIdAsString();
+        User user = requireCurrentUser(userId);
+        if (!passwordCipherService.matches(command.getCurrentPassword(), user.getPassword())) {
+            throw new ApiException(BusinessErrorCode.PASSWORD_ERROR);
+        }
+        if (Objects.equals(command.getCurrentPassword(), command.getNewPassword())) {
+            throw new ApiException(BusinessErrorCode.PASSWORD_SAME_AS_OLD);
+        }
+
+        user.setPassword(passwordCipherService.encode(command.getNewPassword().trim()));
+        user.setUpdateBy(currentOperator());
+        userMapper.updateById(user);
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateCurrentUserAvatar(String avatarUrl) {
+        String userId = StpUtil.getLoginIdAsString();
+        User user = requireCurrentUser(userId);
+        Profile profile = getOrInitProfile(user, currentOperator());
+        profile.setAvatar(avatarUrl);
+        profile.setUpdateBy(currentOperator());
+        saveProfile(profile);
+    }
+
+    private List<String> getCurrentButtons(String userId) {
+        Set<String> roleIds = permissionService.getUserRoleIds(userId);
+        if (roleIds.isEmpty()) {
+            return List.of();
+        }
+
+        Set<String> menuIds = permissionService.getRoleMenuIds(roleIds).stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (menuIds.isEmpty()) {
+            return List.of();
+        }
+
+        return menuMapper.selectList(MenuQuerySupport.selectColumns(new LambdaQueryWrapper<Menu>())
+                        .eq(Menu::getDeleted, 0)
+                        .eq(Menu::getMenuType, "button")
+                        .in(Menu::getId, menuIds))
+                .stream()
+                .map(Menu::getAuthMark)
+                .filter(mark -> mark != null && !mark.isBlank())
+                .distinct()
+                .toList();
+    }
+
+    private User requireCurrentUser(String userId) {
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, userId)
+                .eq(User::getDeleted, 0)
+                .last("limit 1"));
+        if (user == null) {
+            throw new ApiException(BusinessErrorCode.USER_NOT_FOUND);
+        }
+        return user;
+    }
+
+    private Profile getActiveProfile(String userId) {
+        return profileMapper.selectOne(new LambdaQueryWrapper<Profile>()
+                .eq(Profile::getUserId, userId)
+                .eq(Profile::getDeleted, 0)
+                .last("limit 1"));
+    }
+
+    private Profile getOrInitProfile(User user, String operator) {
+        Profile profile = profileMapper.selectOne(new LambdaQueryWrapper<Profile>()
+                .eq(Profile::getUserId, user.getId())
+                .last("limit 1"));
+        if (profile != null) {
+            if (!StringUtils.hasText(profile.getAvatar())) {
+                profile.setAvatar(buildDefaultAvatar(user.getUsername()));
+            }
+            return profile;
+        }
+
+        Profile created = new Profile();
+        created.setId(businessIdGenerator.nextProfileId());
+        created.setUserId(user.getId());
+        created.setNickname(user.getUsername());
+        created.setAvatar(buildDefaultAvatar(user.getUsername()));
+        created.setGender(0);
+        created.setDeleted(0);
+        created.setCreateBy(operator);
+        created.setUpdateBy(operator);
+        return created;
+    }
+
+    private void saveProfile(Profile profile) {
+        profile.setDeleted(0);
+        if (profileMapper.selectById(profile.getId()) == null) {
+            profileMapper.insert(profile);
+            return;
+        }
+        profileMapper.updateById(profile);
+    }
+
+    private String resolveAvatar(Profile profile, String username) {
+        if (profile != null && StringUtils.hasText(profile.getAvatar())) {
+            String avatar = profile.getAvatar();
+            // 如果是完整 URL（http/https 开头）或已带路径前缀，直接返回
+            if (avatar.startsWith("http://") || avatar.startsWith("https://") || avatar.startsWith("/")) {
+                return avatar;
+            }
+            // 否则视为 DB 存储的文件 ID（如 F0000001），补全为可访问的 URL
+            // 注意：如果文件不存在会返回 404，但这比返回无效 URL 更好
+            return "/api/file/db/" + avatar;
+        }
+        return buildDefaultAvatar(username);
+    }
+
+    private String buildDefaultAvatar(String username) {
+        String seed = StringUtils.hasText(username) ? username.trim() : "user";
+        return "https://api.dicebear.com/7.x/avataaars/svg?seed=" + seed;
+    }
+
+    private List<String> parseTags(String tags) {
+        if (!StringUtils.hasText(tags)) {
+            return List.of();
+        }
+        try {
+            List<String> values = objectMapper.readValue(tags, new TypeReference<List<String>>() {
+            });
+            return values == null ? List.of() : values;
+        } catch (Exception ex) {
+            return Collections.emptyList();
+        }
+    }
+
+    private Integer normalizeGender(Integer gender) {
+        if (gender == null) {
+            return 0;
+        }
+        return switch (gender) {
+            case 1, 2, 3 -> gender;
+            default -> 0;
+        };
+    }
+
+    private String normalizeNullable(String value) {
+        return StringUtils.hasText(value) ? value.trim() : null;
+    }
+
+    private String defaultString(String value) {
+        return value == null ? "" : value;
+    }
+
+    private String currentOperator() {
+        return StpUtil.isLogin() ? String.valueOf(StpUtil.getLoginIdDefaultNull()) : "system";
+    }
+}

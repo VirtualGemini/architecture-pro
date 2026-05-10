@@ -1,0 +1,113 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  tomcat:
+    uri-encoding: UTF-8
+    threads:
+      max: 800
+      min-spare: 100
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: architecture-pro
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    use-code-as-default-message: true
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# MyBatis Plus 配置
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  global-config:
+    db-config:
+      id-type: input
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+# SpringDoc OpenAPI 配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+# 应用自定义配置
+architecture-pro:
+  name: architecture-pro
+  version: 1.0.0
+  api-prefix: /api
+  swagger-enabled: true
+  security:
+    swagger-public-enabled: false
+    password:
+      # 可配置算法: bcrypt(默认) / pbkdf2_sha512 / md5(仅兼容历史数据，不推荐)
+      algorithm: bcrypt
+      upgrade-on-login: true
+      # bcrypt 成本因子，范围建议 10~14
+      bcrypt-strength: 12
+      # PBKDF2-SHA512 迭代次数，建议 >= 210000
+      pbkdf2-iterations: 210000
+      # PBKDF2 输出长度（bit），建议 256
+      pbkdf2-key-length: 256
+      # PBKDF2 盐值长度（byte），建议 >= 16
+      pbkdf2-salt-length: 16
+    login:
+      max-fail-count: 5
+      lock-minutes: 30
+    captcha:
+      ttl-seconds: 120
+      max-cache-size: 10000
+    cors:
+      allowed-origin-patterns:
+        - "http://localhost:*"
+        - "http://127.0.0.1:*"
+      allowed-methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        - OPTIONS
+      allowed-headers:
+        - "*"
+      exposed-headers:
+        - Authorization
+        - X-Trace-Id
+      allow-credentials: true
+      max-age: 3600
+
+# Sa-Token 配置
+sa-token:
+  token-name: Authorization
+  timeout: 86400
+  is-concurrent: true
+  is-share: false
+  token-style: uuid
+  is-log: false
+  is-read-header: true
+  is-read-cookie: false
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.architecturepro: DEBUG
+  config: classpath:logback-spring.xml
