@@ -30,7 +30,6 @@ It includes:
 - Spring Validation
 - Spring AOP
 - Hutool
-- Lombok
 - EasyCaptcha
 - JavaMail
 - AWS SDK S3 compatible client

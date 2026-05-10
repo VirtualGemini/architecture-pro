@@ -30,7 +30,6 @@
 - Spring Validation
 - Spring AOP
 - Hutool
-- Lombok
 - EasyCaptcha
 - JavaMail
 - AWS SDK S3 兼容客户端
@@ -151,7 +150,7 @@ architecture-pro/
 
 核心配置文件：
 
-- `application.yml`：公共默认配置、
+- `application.yml`：公共默认配置
 - `application-dev.yml`：开发环境
 - `application-test.yml`：测试环境
 - `application-prod.yml`：生产环境
