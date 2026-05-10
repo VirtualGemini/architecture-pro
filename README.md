@@ -1,191 +1,219 @@
-# architecture-pro - DDD Architecture
+<h2 align="center" id="top">Arc Pro Backend</h2>
+<p align="center">A DDD-oriented backend for the Arc Pro admin system, covering authentication, authorization, user-role-menu management, file services, and pluggable email capabilities.</p>
+<div align="center">English | <a href="./README.zh-CN.md">简体中文</a></div>
 
-基于 **Spring Boot 3.4.5** + **JDK 25** 的 DDD（领域驱动设计）聚合项目架构。
+<br />
 
-## 项目结构
+## Overview
 
-```
+`architecture-pro` is the backend of the `arc-pro` project. It is built around a layered DDD structure and provides the real API foundation for the admin frontend derived from `art-design-pro`.
+
+It includes:
+
+- authentication and session management
+- user, role, and menu management
+- backend-driven permission control
+- file storage and file configuration management
+- captcha and email-based password recovery
+- unified response, exception, logging, and tracing infrastructure
+
+## Tech Stack
+
+- Java 25
+- Spring Boot 3.4.5
+- Maven 3.9+
+- MyBatis-Plus 3.5.12
+- MySQL 8
+- Redis 7
+- Sa-Token 1.40.0
+- SpringDoc OpenAPI 2.8.6
+- Spring Validation
+- Spring AOP
+- Hutool
+- Lombok
+- EasyCaptcha
+- JavaMail
+- AWS SDK S3 compatible client
+
+## Module Structure
+
+```text
 architecture-pro/
-├── architecture-pro-common/              # 通用基础模块
-│   └── com.architecturepro.common
-│       ├── result/              # 统一返回机制 (Result, PageResult)
-│       ├── exception/           # 异常体系 (ErrorCode, ApiException, i18n)
-│       ├── log/                 # 日志注解与常量
-│       └── enums/               # 通用枚举
-│
-├── architecture-pro-domain/              # 领域层
-│   └── com.architecturepro.domain
-│       ├── model/              # 领域模型 (BaseEntity, BaseAggregate, BaseValueObject)
-│       ├── repository/         # 仓储接口 (BaseRepository)
-│       ├── service/            # 领域服务接口
-│       └── event/              # 领域事件 (BaseDomainEvent)
-│
-├── architecture-pro-email/              # 邮件模块（可热插拔）
-│   └── com.architecturepro.email
-│       ├── autoconfigure/      # 自动配置
-│       ├── config/             # 邮件配置属性
-│       ├── core/               # EmailBuilder / EmailSender
-│       └── channel/            # SMTP 通道实现
-│
-├── architecture-pro-infrastructure/     # 基础设施层
-│   └── com.architecturepro.infrastructure
-│       ├── config/             # 配置 (MyBatisPlus, Application, Properties)
-│       ├── persistence/        # 持久化 (BaseMapperExt)
-│       ├── web/                # Web层 (GlobalExceptionHandler, TraceIdFilter, OperationLogAspect)
-│       └── log/                # 日志拦截器
-│
-└── architecture-pro-starter/            # 启动模块
-    └── com.architecturepro.starter
-        └── ArchitectureProApplication  # 启动入口
+├── architecture-pro-common          # Common result, exception, enums, logging annotations
+├── architecture-pro-domain          # DDD domain model, repository contracts, domain services, events
+├── architecture-pro-email           # Pluggable email auto-configuration and sending module
+├── architecture-pro-infrastructure  # Web, persistence, security, file, logging, integration layer
+└── architecture-pro-starter         # Spring Boot startup module
 ```
 
-## 核心设计
+## Functional Coverage
 
-### 1. 统一返回机制 (Result)
+### 1. Common Infrastructure
 
-```java
-// 成功响应
-Result.ok()
-Result.ok(data)
+- Unified response wrappers: `Result`, `PageResult`
+- Error code hierarchy and `ApiException`
+- Global exception handling
+- Trace ID propagation and request logging
+- Operation logging via annotation and AOP
 
-// 失败响应
-Result.fail()
-Result.fail(ErrorCode)
-Result.fail(BusinessErrorCode.USER_NOT_FOUND)
-```
+### 2. Authentication and Security
 
-### 2. 异常处理体系
+- Captcha generation: `GET /api/auth/captcha`
+- Login and logout: `POST /api/auth/login`, `POST /api/auth/logout`
+- Registration: `POST /api/auth/register`
+- Password recovery by email verification code:
+  - `POST /api/auth/forgot-password/code`
+  - `POST /api/auth/forgot-password/reset`
+- Token-based authentication via `Sa-Token`
+- Password policy and legacy hash upgrade support
+- Redis-backed verification code storage using HMAC digest instead of plaintext
 
-- **ErrorCode 接口**: 所有错误码的统一契约，支持 i18n
-- **分级错误码**:
-  - `CommonErrorCode` (0-1): 通用成功/失败
-  - `InternalErrorCode` (0-99): 框架/基础设施错误
-  - `ClientErrorCode` (100-999): 客户端请求错误
-  - `BusinessErrorCode` (10000-99999): 业务逻辑错误（按模块分段）
-- **ApiException**: 统一业务异常，携带 ErrorCode + i18n + payload
-- **GlobalExceptionHandler**: 全局异常拦截，自动转换为 Result
+### 3. Current User Center
 
-### 3. 日志体系
+- Get current user info: `GET /api/user/info`
+- Update profile: `PUT /api/user/profile`
+- Update password: `PUT /api/user/password`
+- Update avatar: `PUT /api/user/avatar`
 
-- **Logback 异步日志**: 按级别分文件（info/error），异步写入
-- **TraceId 链路追踪**: 每个请求自动生成 traceId，贯穿 MDC
-- **@OperationLog 注解**: AOP 操作日志，自动记录方法执行信息
-- **RequestLogInterceptor**: 请求日志拦截器，记录请求/响应摘要
+### 4. System Management
 
-### 4. DDD 分层
+- User management:
+  - `GET /api/user/list`
+  - `POST /api/user`
+  - `PUT /api/user/{userId}`
+  - `DELETE /api/user/{userId}`
+- Role management:
+  - `GET /api/role/list`
+  - `POST /api/role`
+  - `PUT /api/role/{roleId}`
+  - `DELETE /api/role/{roleId}`
+  - `GET /api/role/{roleId}/menu-permissions`
+  - `PUT /api/role/{roleId}/menu-permissions`
+- Menu management:
+  - `GET /api/v3/system/menus/simple`
+  - `POST /api/v3/system/menus`
+  - `PUT /api/v3/system/menus/{menuId}`
+  - `DELETE /api/v3/system/menus/{menuId}`
 
-| 层 | 模块 | 职责 |
-|---|---|---|
-| Common | architecture-pro-common | 通用工具、Result、异常、日志注解 |
-| Domain | architecture-pro-domain | 领域模型、仓储接口、领域服务、领域事件 |
-| Email | architecture-pro-email | 邮件自动配置、发送器、虚拟线程异步发送 |
-| Infrastructure | architecture-pro-infrastructure | 配置、持久化实现、Web、安全 |
-| Starter | architecture-pro-starter | 启动入口、配置文件 |
+### 5. File Services
 
-### 5. 认证与找回密码
+- Backend upload flow: `POST /api/file/upload`
+- Frontend direct upload flow with presigned URL:
+  - `GET /api/file/presigned-url`
+  - `POST /api/file/create`
+- File querying and deletion:
+  - `GET /api/file/get`
+  - `GET /api/file/page`
+  - `DELETE /api/file/delete`
+  - `DELETE /api/file/delete-batch`
+- File download and temporary access:
+  - `GET /api/file/{configId}/get/**`
+  - `GET /api/file/presigned-get-url`
 
-- 登录、注册接口位于 `POST /api/auth/login`、`POST /api/auth/register`
-- 忘记密码已接入邮件验证码重置流程：
-  - `POST /api/auth/forgot-password/code`：发送邮箱验证码
-  - `POST /api/auth/forgot-password/reset`：校验验证码并重置密码
-- 重置密码依赖 `sys_user.email` 字段，用户必须先绑定邮箱
-- 邮件验证码默认 10 分钟有效，60 秒内限制重复发送
+Supported storage implementations in the codebase:
 
-### 6. 邮件模块
+- local storage
+- database storage
+- S3-compatible object storage
 
-- 采用独立子模块 `architecture-pro-email`，可随依赖启停，尽量保持热插拔
-- 默认使用 SMTP 通道
-- 基于 JDK 25 虚拟线程执行异步发送任务
-- 业务侧可直接注入 `EmailBuilder` 实现一行发送：
+### 6. File Configuration Management
 
-```java
-@Resource
-private EmailBuilder emailBuilder;
+- Create config: `POST /api/file-config/create`
+- Update config: `PUT /api/file-config/update`
+- Set master config: `PUT /api/file-config/update-master`
+- Enable or disable config: `PUT /api/file-config/update-enabled`
+- Query config: `GET /api/file-config/get`, `GET /api/file-config/page`
+- Delete config: `DELETE /api/file-config/delete`, `DELETE /api/file-config/delete-batch`
+- Connectivity test: `GET /api/file-config/test`
 
-emailBuilder.to("user@example.com")
-        .subject("Test")
-        .text("hello")
-        .send();
-```
+### 7. Email Module
 
-## 快速开始
+The `architecture-pro-email` module is designed as a pluggable dependency.
 
-### 环境要求
+Features:
+
+- Spring Boot auto-configuration
+- SMTP support
+- async sending
+- retry policy
+- virtual-thread execution on JDK 25
+- one-line builder-based sending API
+ 
+## Architecture Notes
+
+- REST APIs use the unified prefix `/api`
+- Permission checks are based on `SaCheckPermission`
+- The frontend consumes backend-provided menu data for dynamic routing
+- Redis is used for captcha, password reset verification codes, and active user status
+- Swagger/OpenAPI support exists but is disabled by default in development and production profiles
+
+## Configuration
+
+Key configuration areas:
+
+- `application.yml`: shared defaults 
+- `application-dev.yml`: development
+- `application-test.yml`: test
+- `application-prod.yml`: production
+
+Important backend settings:
+
+- server port: `8080`
+- API prefix: `/api`
+- default profile: `dev`
+- token header: `Authorization`
+- CORS origins configurable through `architecture-pro.security.cors`
+ 
+## Local Development
+
+Requirements:
 
 - JDK 25+
 - Maven 3.9+
+- MySQL 8
+- Redis 7
 
-### 编译
+Start infrastructure with Docker Compose:
+
+```bash
+cd script/docker
+docker compose up -d
+```
+
+Build the project:
 
 ```bash
 mvn clean compile
 ```
 
-### 运行
+Run the application:
 
 ```bash
 cd architecture-pro-starter
 mvn spring-boot:run
 ```
 
-### 打包
+Package the application:
 
 ```bash
 mvn clean package -DskipTests
 ```
 
-## 配置说明
+## Frontend Integration
 
-- `application.yml`: 主配置
-- `application-dev.yml`: 开发环境
-- `application-test.yml`: 测试环境
-- `application-prod.yml`: 生产环境
-- `logback-spring.xml`: 日志配置
+This backend is intended to work directly with the `art-design-pro` frontend inside the same repository.
 
-### 邮件配置
+Recommended local ports:
 
-默认配置前缀为 `vg.lite-email`，典型示例：
+- Backend: `http://localhost:8080`
+- Frontend: `http://localhost:3006`
 
-```yml
-vg:
-  lite-email:
-    enabled: true
-    sender: ${MAIL_SENDER:}
-    password: ${MAIL_PASSWORD:}
-    ssl: true
-    async:
-      enabled: true
-      virtual-threads: true
-      concurrency-limit: 256
-      thread-name-prefix: vg-email-
-    retries:
-      global-retries: 1
-      max-retries: 3
-      initial-delay: 1000
-    logging:
-      enabled: true
-      level: INFO
-```
-
-说明：
-
-- `enabled`：是否启用邮件模块
-- `sender` / `password`：发件邮箱和授权码
-- `ssl`：QQ 邮箱等 `465` 端口场景通常为 `true`
-- `virtual-threads`：开启后使用 JDK 25 虚拟线程执行异步发信
-- 未显式配置 `host/port` 时，会按邮箱域名自动推断 SMTP 服务
-
-### 验证码存储
-
-- 登录图形验证码与忘记密码邮件验证码均使用 Redis 存储
-- Redis 中保存的是基于 `architecture-pro.security.verification.secret` 计算后的 HMAC-SHA256 摘要，不保存明文验证码
-- 忘记密码验证码默认 10 分钟有效，60 秒内限制重复发送
-- 生产环境务必通过环境变量设置 `VERIFICATION_SECRET`
-
-## 开发规范
-
-详见 `DEVELOPMENT_SPEC.md`。
+The frontend uses Vite proxying and calls this backend through `/api`.
 
 ## License
 
 MIT
+
+<br>
+<div align="center"><a href="#top">Back to Top</a></div>
+<br>
