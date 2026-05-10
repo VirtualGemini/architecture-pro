@@ -4,6 +4,7 @@ import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.stp.StpUtil;
 import com.architecturepro.infrastructure.config.ArchitectureProProperties;
 import com.architecturepro.infrastructure.config.SecurityProperties;
+import com.architecturepro.infrastructure.web.auth.interceptor.ActiveUserHeartbeatInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -16,10 +17,14 @@ public class SaTokenConfig implements WebMvcConfigurer {
 
     private final SecurityProperties securityProperties;
     private final ArchitectureProProperties architectureProProperties;
+    private final ActiveUserHeartbeatInterceptor activeUserHeartbeatInterceptor;
 
-    public SaTokenConfig(SecurityProperties securityProperties, ArchitectureProProperties architectureProProperties) {
+    public SaTokenConfig(SecurityProperties securityProperties,
+                         ArchitectureProProperties architectureProProperties,
+                         ActiveUserHeartbeatInterceptor activeUserHeartbeatInterceptor) {
         this.securityProperties = securityProperties;
         this.architectureProProperties = architectureProProperties;
+        this.activeUserHeartbeatInterceptor = activeUserHeartbeatInterceptor;
     }
 
     @Override
@@ -43,6 +48,10 @@ public class SaTokenConfig implements WebMvcConfigurer {
         registry.addInterceptor(new SaInterceptor(handle -> StpUtil.checkLogin()))
             .addPathPatterns("/**")
             .excludePathPatterns(excludes);
+
+        registry.addInterceptor(activeUserHeartbeatInterceptor)
+                .addPathPatterns("/**")
+                .excludePathPatterns(excludes);
     }
 
     private void addAuthExclude(List<String> excludes, String authSuffix) {

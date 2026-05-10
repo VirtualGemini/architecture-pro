@@ -22,6 +22,7 @@ import com.architecturepro.infrastructure.web.auth.dto.LoginCommand;
 import com.architecturepro.infrastructure.web.auth.dto.RegisterCommand;
 import com.architecturepro.infrastructure.web.auth.dto.ResetPasswordCommand;
 import com.architecturepro.infrastructure.web.auth.dto.TokenDTO;
+import com.architecturepro.infrastructure.web.auth.service.ActiveUserStatusService;
 import com.architecturepro.infrastructure.web.auth.service.LoginService;
 import com.architecturepro.infrastructure.web.auth.service.PasswordCipherService;
 import com.wf.captcha.SpecCaptcha;
@@ -39,6 +40,7 @@ public class LoginServiceImpl implements LoginService {
     private final BusinessIdGenerator businessIdGenerator;
     private final EmailBuilder emailBuilder;
     private final VerificationCodeStore verificationCodeStore;
+    private final ActiveUserStatusService activeUserStatusService;
 
     public LoginServiceImpl(UserMapper userMapper,
                             ProfileMapper profileMapper,
@@ -48,7 +50,8 @@ public class LoginServiceImpl implements LoginService {
                             SecurityProperties securityProperties,
                             BusinessIdGenerator businessIdGenerator,
                             EmailBuilder emailBuilder,
-                            VerificationCodeStore verificationCodeStore) {
+                            VerificationCodeStore verificationCodeStore,
+                            ActiveUserStatusService activeUserStatusService) {
         this.userMapper = userMapper;
         this.profileMapper = profileMapper;
         this.roleMapper = roleMapper;
@@ -58,6 +61,7 @@ public class LoginServiceImpl implements LoginService {
         this.businessIdGenerator = businessIdGenerator;
         this.emailBuilder = emailBuilder;
         this.verificationCodeStore = verificationCodeStore;
+        this.activeUserStatusService = activeUserStatusService;
     }
 
     @Override
@@ -115,6 +119,7 @@ public class LoginServiceImpl implements LoginService {
         upgradePasswordIfNeeded(user, password);
 
         StpUtil.login(user.getId());
+        activeUserStatusService.recordLogin(user.getId());
         String token = StpUtil.getTokenValue();
 
         return new TokenDTO(token, null);
@@ -231,7 +236,9 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public void logout() {
+        String userId = StpUtil.isLogin() ? StpUtil.getLoginIdAsString() : null;
         StpUtil.logout();
+        activeUserStatusService.recordLogout(userId);
     }
 
     private void validateCaptchaIfPresent(String captchaCode, String key) {

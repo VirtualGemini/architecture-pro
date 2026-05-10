@@ -14,6 +14,7 @@ import com.architecturepro.infrastructure.persistence.RoleMapper;
 import com.architecturepro.infrastructure.persistence.UserMapper;
 import com.architecturepro.infrastructure.persistence.UserRoleMapper;
 import com.architecturepro.infrastructure.web.auth.service.PasswordCipherService;
+import com.architecturepro.infrastructure.web.auth.service.ActiveUserStatusService;
 import com.architecturepro.infrastructure.web.permission.service.PermissionService;
 import com.architecturepro.infrastructure.web.RequestDateTimeFormatter;
 import com.architecturepro.infrastructure.web.user.dto.UserListItemDTO;
@@ -47,6 +48,7 @@ public class UserManageServiceImpl implements UserManageService {
     private final PasswordCipherService passwordCipherService;
     private final PermissionService permissionService;
     private final BusinessIdGenerator businessIdGenerator;
+    private final ActiveUserStatusService activeUserStatusService;
 
     public UserManageServiceImpl(UserMapper userMapper,
                                  ProfileMapper profileMapper,
@@ -54,7 +56,8 @@ public class UserManageServiceImpl implements UserManageService {
                                  UserRoleMapper userRoleMapper,
                                  PasswordCipherService passwordCipherService,
                                  PermissionService permissionService,
-                                 BusinessIdGenerator businessIdGenerator) {
+                                 BusinessIdGenerator businessIdGenerator,
+                                 ActiveUserStatusService activeUserStatusService) {
         this.userMapper = userMapper;
         this.profileMapper = profileMapper;
         this.roleMapper = roleMapper;
@@ -62,15 +65,20 @@ public class UserManageServiceImpl implements UserManageService {
         this.passwordCipherService = passwordCipherService;
         this.permissionService = permissionService;
         this.businessIdGenerator = businessIdGenerator;
+        this.activeUserStatusService = activeUserStatusService;
     }
 
     @Override
     public PageResult<UserListItemDTO> list(UserQuery query) {
-        Page<User> page = new Page<>(query.getCurrent(), query.getSize());
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getDeleted, 0);
         if (StringUtils.hasText(query.getStatus())) {
-            wrapper.eq(User::getStatus, Integer.parseInt(query.getStatus()));
+            String normalizedStatus = query.getStatus().trim();
+            if ("4".equals(normalizedStatus)) {
+                wrapper.eq(User::getStatus, 4);
+            } else if ("3".equals(normalizedStatus)) {
+                wrapper.eq(User::getStatus, 3);
+            }
         }
         if (StringUtils.hasText(query.getUserName())) {
             wrapper.like(User::getUsername, query.getUserName().trim());
@@ -97,16 +105,47 @@ public class UserManageServiceImpl implements UserManageService {
         }
         wrapper.orderByDesc(User::getId);
 
-        Page<User> result = userMapper.selectPage(page, wrapper);
-        List<String> userIds = result.getRecords().stream().map(User::getId).toList();
+        String statusFilter = StringUtils.hasText(query.getStatus()) ? query.getStatus().trim() : null;
+        boolean activeStatusFilter = ActiveUserStatusService.STATUS_ONLINE.equals(statusFilter)
+                || ActiveUserStatusService.STATUS_OFFLINE.equals(statusFilter);
+
+        List<User> users;
+        long total;
+        if (activeStatusFilter) {
+            users = userMapper.selectList(wrapper);
+            total = users.size();
+        } else {
+            Page<User> page = new Page<>(query.getCurrent(), query.getSize());
+            Page<User> result = userMapper.selectPage(page, wrapper);
+            users = result.getRecords();
+            total = result.getTotal();
+        }
+
+        List<String> userIds = users.stream().map(User::getId).toList();
         Map<String, Profile> profileMap = getActiveProfileMap(userIds);
         Map<String, List<String>> roleCodeMap = userIds.isEmpty() ? Map.of() : new LinkedHashMap<>(permissionService.getUserRoleCodes(userIds));
+        Map<String, String> activeStatusMap = activeUserStatusService.resolveStatuses(userIds);
 
-        List<UserListItemDTO> list = result.getRecords().stream()
-                .map(user -> toUserListItem(user, profileMap.get(user.getId()), roleCodeMap.getOrDefault(user.getId(), List.of())))
+        List<UserListItemDTO> list = users.stream()
+                .map(user -> toUserListItem(
+                        user,
+                        profileMap.get(user.getId()),
+                        roleCodeMap.getOrDefault(user.getId(), List.of()),
+                        resolveDisplayStatus(user, activeStatusMap)))
                 .collect(Collectors.toList());
 
-        return new PageResult<>(result.getTotal(), query.getCurrent(), query.getSize(), list);
+        if (activeStatusFilter) {
+            list = list.stream()
+                    .filter(item -> statusFilter.equals(item.getStatus()))
+                    .collect(Collectors.toList());
+            total = list.size();
+            long current = Math.max(query.getCurrent(), 1L);
+            long size = Math.max(query.getSize(), 1L);
+            int fromIndex = (int) Math.min((current - 1) * size, list.size());
+            int toIndex = (int) Math.min(fromIndex + size, list.size());
+            list = list.subList(fromIndex, toIndex);
+        }
+        return new PageResult<>(total, query.getCurrent(), query.getSize(), list);
     }
 
     @Override
@@ -188,12 +227,12 @@ public class UserManageServiceImpl implements UserManageService {
         return true;
     }
 
-    private UserListItemDTO toUserListItem(User user, Profile profile, List<String> roleCodes) {
+    private UserListItemDTO toUserListItem(User user, Profile profile, List<String> roleCodes, String status) {
         UserListItemDTO dto = new UserListItemDTO();
         dto.setId(user.getId());
         dto.setUserId(user.getId());
         dto.setAvatar(resolveAvatar(profile, user.getUsername()));
-        dto.setStatus(String.valueOf(user.getStatus()));
+        dto.setStatus(status);
         dto.setUserName(user.getUsername());
         dto.setUserGender(resolveGenderLabel(profile == null ? null : profile.getGender()));
         dto.setNickName(profile == null ? user.getUsername() : defaultString(profile.getNickname(), user.getUsername()));
@@ -205,6 +244,17 @@ public class UserManageServiceImpl implements UserManageService {
         dto.setUpdateBy(user.getUpdateBy());
         dto.setUpdateTime(RequestDateTimeFormatter.format(user.getUpdateTime()));
         return dto;
+    }
+
+    private String resolveDisplayStatus(User user, Map<String, String> activeStatusMap) {
+        Integer userStatus = user.getStatus();
+        if (Integer.valueOf(4).equals(userStatus)) {
+            return "4";
+        }
+        if (Integer.valueOf(3).equals(userStatus)) {
+            return "3";
+        }
+        return activeStatusMap.getOrDefault(user.getId(), ActiveUserStatusService.STATUS_OFFLINE);
     }
 
     private String resolveGenderLabel(Integer gender) {

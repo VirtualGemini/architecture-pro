@@ -1,31 +1,44 @@
 # 开发环境配置
 spring:
   datasource:
+    # MySQL 驱动类
     driver-class-name: com.mysql.cj.jdbc.Driver
+    # 开发环境数据库连接串
     url: jdbc:mysql://localhost:3306/architecture_pro?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT&allowPublicKeyRetrieval=true
+    # 开发环境数据库用户名
     username: root
+    # 开发环境数据库密码
     password: root
   data:
     redis:
+      # 开发环境 Redis 主机
       host: localhost
+      # 开发环境 Redis 端口
       port: 6379
+      # 开发环境 Redis 密码；空表示无密码
       password: 
+      # 开发环境 Redis 库编号
       database: 0
 
 springdoc:
   api-docs:
+    # 开发环境默认关闭 OpenAPI 文档
     enabled: false
   swagger-ui:
+    # 开发环境默认关闭 Swagger UI
     enabled: false
 
 logging:
   level:
+    # 开发环境业务日志级别
     com.architecturepro: DEBUG
   file:
+    # 开发环境日志目录
     path: ./log
 
 architecture-pro:
   security:
+    # 开发环境默认不公开 Swagger
     swagger-public-enabled: false
     cors:
       # 开发环境前后端联调允许的来源

@@ -136,6 +136,7 @@ public class SecurityProperties {
     public static class Login {
         private int maxFailCount = 5;
         private int lockMinutes = 30;
+        private final Presence presence = new Presence();
 
         public int getMaxFailCount() {
             return maxFailCount;
@@ -151,6 +152,58 @@ public class SecurityProperties {
 
         public void setLockMinutes(int lockMinutes) {
             this.lockMinutes = lockMinutes;
+        }
+
+        public Presence getPresence() {
+            return presence;
+        }
+
+        public static class Presence {
+            private boolean requestHeartbeatEnabled = true;
+            private boolean loginSignalEnabled = true;
+            private boolean logoutSignalEnabled = true;
+            private int idleOfflineSeconds = 6000;
+            private int logoutOfflineSeconds = 30;
+
+            public boolean isRequestHeartbeatEnabled() {
+                return requestHeartbeatEnabled;
+            }
+
+            public void setRequestHeartbeatEnabled(boolean requestHeartbeatEnabled) {
+                this.requestHeartbeatEnabled = requestHeartbeatEnabled;
+            }
+
+            public boolean isLoginSignalEnabled() {
+                return loginSignalEnabled;
+            }
+
+            public void setLoginSignalEnabled(boolean loginSignalEnabled) {
+                this.loginSignalEnabled = loginSignalEnabled;
+            }
+
+            public boolean isLogoutSignalEnabled() {
+                return logoutSignalEnabled;
+            }
+
+            public void setLogoutSignalEnabled(boolean logoutSignalEnabled) {
+                this.logoutSignalEnabled = logoutSignalEnabled;
+            }
+
+            public int getIdleOfflineSeconds() {
+                return idleOfflineSeconds;
+            }
+
+            public void setIdleOfflineSeconds(int idleOfflineSeconds) {
+                this.idleOfflineSeconds = idleOfflineSeconds;
+            }
+
+            public int getLogoutOfflineSeconds() {
+                return logoutOfflineSeconds;
+            }
+
+            public void setLogoutOfflineSeconds(int logoutOfflineSeconds) {
+                this.logoutOfflineSeconds = logoutOfflineSeconds;
+            }
         }
     }
 
