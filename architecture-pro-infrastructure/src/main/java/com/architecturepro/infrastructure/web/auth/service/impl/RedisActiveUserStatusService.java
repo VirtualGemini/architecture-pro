@@ -18,7 +18,6 @@ public class RedisActiveUserStatusService implements ActiveUserStatusService {
 
     private static final String PRESENCE_KEY_PREFIX = "auth:presence:user:";
     private static final String PRESENCE_ONLINE = "online";
-    private static final String PRESENCE_OFFLINE = "offline";
 
     private final StringRedisTemplate stringRedisTemplate;
     private final SecurityProperties.Login.Presence presenceProperties;
@@ -54,7 +53,8 @@ public class RedisActiveUserStatusService implements ActiveUserStatusService {
             stringRedisTemplate.delete(buildKey(userId));
             return;
         }
-        writePresence(userId, PRESENCE_OFFLINE, logoutOfflineSeconds);
+        // 显式退出后保留在线状态一段时间，TTL 到期后自然转为离线。
+        writePresence(userId, PRESENCE_ONLINE, logoutOfflineSeconds);
     }
 
     @Override
