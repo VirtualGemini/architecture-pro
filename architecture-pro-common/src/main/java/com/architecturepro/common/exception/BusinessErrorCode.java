@@ -71,6 +71,7 @@ public enum BusinessErrorCode implements ErrorCode {
 
     // ---- 用户管理模块 (22000-22999) ----
     USER_PASSWORD_REQUIRED_FOR_CREATE(22000, "新增用户时密码不能为空"),
+    USER_DELETE_SELF_FORBIDDEN(22001, "当前登录用户不能删除自己"),
     ;
 
     private final int code;

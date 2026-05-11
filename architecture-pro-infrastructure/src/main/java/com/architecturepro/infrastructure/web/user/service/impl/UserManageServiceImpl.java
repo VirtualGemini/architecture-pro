@@ -201,6 +201,7 @@ public class UserManageServiceImpl implements UserManageService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean delete(String userId) {
+        ensureNotDeleteSelf(userId);
         getActiveUser(userId);
         String operator = currentOperator();
 
@@ -225,6 +226,13 @@ public class UserManageServiceImpl implements UserManageService {
             userRoleMapper.logicalDeleteByIds(activeRelationIds, operator);
         }
         return true;
+    }
+
+    private void ensureNotDeleteSelf(String userId) {
+        String currentUserId = StpUtil.getLoginIdAsString();
+        if (StringUtils.hasText(currentUserId) && currentUserId.equals(userId)) {
+            throw new ApiException(BusinessErrorCode.USER_DELETE_SELF_FORBIDDEN);
+        }
     }
 
     private UserListItemDTO toUserListItem(User user, Profile profile, List<String> roleCodes, String status) {
