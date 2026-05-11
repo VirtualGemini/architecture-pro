@@ -11,6 +11,10 @@ public class Role extends BaseEntity {
 
     private String description;
 
+    private Integer type;
+
+    private Integer roleLevel;
+
     private Integer enabled;
 
     public String getRoleName() {
@@ -35,6 +39,22 @@ public class Role extends BaseEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
+    public Integer getRoleLevel() {
+        return roleLevel;
+    }
+
+    public void setRoleLevel(Integer roleLevel) {
+        this.roleLevel = roleLevel;
     }
 
     public Integer getEnabled() {

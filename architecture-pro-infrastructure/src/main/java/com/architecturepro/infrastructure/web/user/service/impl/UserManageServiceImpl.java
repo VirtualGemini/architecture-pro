@@ -179,6 +179,7 @@ public class UserManageServiceImpl implements UserManageService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean update(String userId, UserSaveCommand command) {
         User user = getActiveUser(userId);
+        ensureCanOperateUser(user.getId(), BusinessErrorCode.USER_UPDATE_FORBIDDEN);
         ensureUsernameUnique(command.getUsername(), userId);
 
         List<Role> roles = resolveRoles(command.getRoleCodes());
@@ -201,8 +202,8 @@ public class UserManageServiceImpl implements UserManageService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean delete(String userId) {
-        ensureNotDeleteSelf(userId);
-        getActiveUser(userId);
+        User user = getActiveUser(userId);
+        ensureCanOperateUser(user.getId(), BusinessErrorCode.USER_DELETE_FORBIDDEN);
         String operator = currentOperator();
 
         userMapper.update(null, new LambdaUpdateWrapper<User>()
@@ -228,10 +229,18 @@ public class UserManageServiceImpl implements UserManageService {
         return true;
     }
 
-    private void ensureNotDeleteSelf(String userId) {
+    private void ensureCanOperateUser(String userId, BusinessErrorCode forbiddenCode) {
         String currentUserId = StpUtil.getLoginIdAsString();
+        if (!StringUtils.hasText(currentUserId)) {
+            throw new ApiException(forbiddenCode);
+        }
         if (StringUtils.hasText(currentUserId) && currentUserId.equals(userId)) {
-            throw new ApiException(BusinessErrorCode.USER_DELETE_SELF_FORBIDDEN);
+            throw new ApiException(BusinessErrorCode.USER_OPERATE_SELF_FORBIDDEN);
+        }
+        int operatorLevel = permissionService.getUserHighestRoleLevel(currentUserId);
+        int targetLevel = permissionService.getUserHighestRoleLevel(userId);
+        if (operatorLevel <= targetLevel) {
+            throw new ApiException(forbiddenCode);
         }
     }
 

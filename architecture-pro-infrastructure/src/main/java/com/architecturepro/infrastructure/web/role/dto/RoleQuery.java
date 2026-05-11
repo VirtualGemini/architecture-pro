@@ -20,6 +20,9 @@ public class RoleQuery {
     @Schema(description = "角色描述")
     private String description;
 
+    @Schema(description = "角色类型：0系统角色，1自定义角色")
+    private Integer type;
+
     @Schema(description = "是否启用")
     private Boolean enabled;
 
@@ -67,6 +70,14 @@ public class RoleQuery {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
     }
 
     public Boolean getEnabled() {

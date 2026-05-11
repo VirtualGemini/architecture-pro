@@ -1,6 +1,7 @@
 package com.architecturepro.infrastructure.web.menu.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.architecturepro.common.constants.SystemRoleCode;
 import com.architecturepro.common.exception.ApiException;
 import com.architecturepro.common.exception.BusinessErrorCode;
 import com.architecturepro.domain.model.Menu;
@@ -39,7 +40,6 @@ import java.util.stream.Collectors;
 public class MenuServiceImpl implements MenuService {
 
     private static final String MENU_TYPE_BUTTON = "button";
-    private static final String SUPER_ROLE_CODE = "R_SUPER";
 
     private final MenuMapper menuMapper;
     private final RoleMapper roleMapper;
@@ -183,6 +183,7 @@ public class MenuServiceImpl implements MenuService {
         menu.setCreateBy(currentOperator());
         menu.setUpdateBy(currentOperator());
         menuMapper.insert(menu);
+        bindMenuToSuperRole(menu.getId());
         return menu.getId();
     }
 
@@ -246,7 +247,7 @@ public class MenuServiceImpl implements MenuService {
             return Set.of();
         }
 
-        if (permissionService.getUserRoleCodes(userId).stream().anyMatch(SUPER_ROLE_CODE::equals)) {
+        if (permissionService.getUserRoleCodes(userId).stream().anyMatch(SystemRoleCode.R_SUPER::equals)) {
             return menuMapper.selectList(MenuQuerySupport.selectColumns(new LambdaQueryWrapper<Menu>())
                             .eq(Menu::getDeleted, 0)
                             .eq(Menu::getIsEnable, 1))
@@ -424,6 +425,22 @@ public class MenuServiceImpl implements MenuService {
 
     private String normalizeNullable(String value) {
         return StringUtils.hasText(value) ? value.trim() : null;
+    }
+
+    private void bindMenuToSuperRole(String menuId) {
+        if (!StringUtils.hasText(menuId)) {
+            return;
+        }
+        Role superRole = roleMapper.selectOne(new LambdaQueryWrapper<Role>()
+                .eq(Role::getDeleted, 0)
+                .eq(Role::getRoleCode, SystemRoleCode.R_SUPER)
+                .last("limit 1"));
+        if (superRole == null || !StringUtils.hasText(superRole.getId())) {
+            return;
+        }
+        LinkedHashSet<String> menuIds = new LinkedHashSet<>(permissionService.getRoleMenuIds(superRole.getId()));
+        menuIds.add(menuId);
+        permissionService.assignRoleMenu(superRole.getId(), menuIds);
     }
 
     private String currentOperator() {

@@ -1,6 +1,8 @@
 package com.architecturepro.infrastructure.web.role.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.architecturepro.common.constants.SystemRoleCode;
+import com.architecturepro.common.enums.RoleTypeEnum;
 import com.architecturepro.common.result.PageResult;
 import com.architecturepro.common.exception.ApiException;
 import com.architecturepro.common.exception.BusinessErrorCode;
@@ -26,6 +28,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -78,6 +81,9 @@ public class RoleServiceImpl implements RoleService {
         if (query.getDescription() != null && !query.getDescription().isEmpty()) {
             wrapper.like(Role::getDescription, query.getDescription());
         }
+        if (query.getType() != null) {
+            wrapper.eq(Role::getType, query.getType());
+        }
         if (query.getEnabled() != null) {
             wrapper.eq(Role::getEnabled, query.getEnabled() ? 1 : 0);
         }
@@ -108,6 +114,7 @@ public class RoleServiceImpl implements RoleService {
         role.setRoleName(command.getRoleName().trim());
         role.setRoleCode(command.getRoleCode().trim());
         role.setDescription(command.getDescription().trim());
+        role.setType(RoleTypeEnum.CUSTOM.getCode());
         role.setEnabled(Boolean.TRUE.equals(command.getEnabled()) ? 1 : 0);
         role.setDeleted(0);
         role.setCreateBy(currentOperator());
@@ -120,6 +127,7 @@ public class RoleServiceImpl implements RoleService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean update(String roleId, RoleSaveCommand command) {
         Role role = getActiveRole(roleId);
+        ensureRoleEditable(role, command);
         ensureRoleCodeUnique(command.getRoleCode(), roleId);
         role.setRoleName(command.getRoleName().trim());
         role.setRoleCode(command.getRoleCode().trim());
@@ -134,6 +142,9 @@ public class RoleServiceImpl implements RoleService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean delete(String roleId) {
         Role role = getActiveRole(roleId);
+        if (Integer.valueOf(RoleTypeEnum.SYSTEM.getCode()).equals(role.getType())) {
+            throw new ApiException(BusinessErrorCode.SYSTEM_ROLE_DELETE_FORBIDDEN);
+        }
         long userBindingCount = userRoleMapper.selectCount(new LambdaQueryWrapper<UserRole>()
                 .eq(UserRole::getDeleted, 0)
                 .eq(UserRole::getRoleId, roleId));
@@ -260,9 +271,23 @@ public class RoleServiceImpl implements RoleService {
         dto.setRoleName(role.getRoleName());
         dto.setRoleCode(role.getRoleCode());
         dto.setDescription(role.getDescription());
+        dto.setType(role.getType());
+        dto.setTypeName(RoleTypeEnum.getDesc(role.getType()));
         dto.setEnabled(Integer.valueOf(1).equals(role.getEnabled()));
         dto.setCreateTime(RequestDateTimeFormatter.format(role.getCreateTime()));
         return dto;
+    }
+
+    private void ensureRoleEditable(Role role, RoleSaveCommand command) {
+        if (SystemRoleCode.R_SUPER.equals(role.getRoleCode())) {
+            throw new ApiException(BusinessErrorCode.SUPER_ROLE_EDIT_FORBIDDEN);
+        }
+        if (Integer.valueOf(RoleTypeEnum.SYSTEM.getCode()).equals(role.getType())) {
+            String targetRoleCode = command.getRoleCode() == null ? null : command.getRoleCode().trim();
+            if (StringUtils.hasText(targetRoleCode) && !targetRoleCode.equals(role.getRoleCode())) {
+                throw new ApiException(BusinessErrorCode.SYSTEM_ROLE_CODE_IMMUTABLE);
+            }
+        }
     }
 
     private void ensureRoleCodeUnique(String roleCode, String excludeRoleId) {

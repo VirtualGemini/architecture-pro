@@ -303,6 +303,8 @@ CREATE TABLE `sys_role` (
   `role_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '角色名称',
   `role_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '角色编码',
   `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '角色描述',
+  `type` tinyint NOT NULL DEFAULT '1' COMMENT '角色类型：0系统角色，1自定义角色',
+  `role_level` int NOT NULL DEFAULT '0' COMMENT '角色等级，值越大权限越高',
   `enabled` tinyint DEFAULT '1' COMMENT '启用状态(0-禁用 1-启用)',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -321,10 +323,10 @@ CREATE TABLE `sys_role` (
 --
 
 /*!40000 ALTER TABLE `sys_role` DISABLE KEYS */;
-INSERT INTO `sys_role` (`id`, `role_name`, `role_code`, `description`, `enabled`, `create_time`, `update_time`, `create_by`, `update_by`, `deleted`) VALUES
-  ('R0000001','超级管理员','R_SUPER','拥有系统全部权限',1,'2026-05-10 12:00:00','2026-05-10 12:00:00','system','system',0),
-  ('R0000002','管理员','R_ADMIN','拥有系统管理权限',1,'2026-05-10 12:00:00','2026-05-10 12:00:00','system','system',0),
-  ('R0000003','普通用户','R_USER','拥有系统普通权限',1,'2026-05-10 12:00:00','2026-05-10 12:00:00','system','system',0);
+INSERT INTO `sys_role` (`id`, `role_name`, `role_code`, `description`, `type`, `role_level`, `enabled`, `create_time`, `update_time`, `create_by`, `update_by`, `deleted`) VALUES
+  ('R0000001','超级管理员','R_SUPER','拥有系统全部权限',0,3,1,'2026-05-10 12:00:00','2026-05-10 12:00:00','system','system',0),
+  ('R0000002','管理员','R_ADMIN','拥有系统管理权限',0,2,1,'2026-05-10 12:00:00','2026-05-10 12:00:00','system','system',0),
+  ('R0000003','普通用户','R_USER','拥有系统普通权限',0,1,1,'2026-05-10 12:00:00','2026-05-10 12:00:00','system','system',0);
 /*!40000 ALTER TABLE `sys_role` ENABLE KEYS */;
 
 --

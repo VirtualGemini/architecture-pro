@@ -21,5 +21,9 @@ public interface PermissionService {
 
     Map<String, List<String>> getUserRoleCodes(Collection<String> userIds);
 
+    Integer getUserHighestRoleLevel(String userId);
+
+    Map<String, Integer> getUserHighestRoleLevels(Collection<String> userIds);
+
     List<String> getUserPermissionMarks(String userId);
 }

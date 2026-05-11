@@ -71,7 +71,12 @@ public enum BusinessErrorCode implements ErrorCode {
 
     // ---- 用户管理模块 (22000-22999) ----
     USER_PASSWORD_REQUIRED_FOR_CREATE(22000, "新增用户时密码不能为空"),
-    USER_DELETE_SELF_FORBIDDEN(22001, "当前登录用户不能删除自己"),
+    SYSTEM_ROLE_DELETE_FORBIDDEN(22001, "系统角色不可删除"),
+    SUPER_ROLE_EDIT_FORBIDDEN(22002, "最高权限角色不可编辑"),
+    USER_OPERATE_SELF_FORBIDDEN(22003, "不可操作当前登录用户"),
+    USER_DELETE_FORBIDDEN(22004, "无权限删除该用户"),
+    USER_UPDATE_FORBIDDEN(22005, "无权限修改该用户"),
+    SYSTEM_ROLE_CODE_IMMUTABLE(22006, "系统角色编码不允许修改"),
     ;
 
     private final int code;

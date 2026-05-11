@@ -1,6 +1,7 @@
 package com.architecturepro.infrastructure.web.permission.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.architecturepro.common.constants.SystemRoleCode;
 import com.architecturepro.common.exception.ApiException;
 import com.architecturepro.common.exception.BusinessErrorCode;
 import com.architecturepro.domain.model.Menu;
@@ -30,8 +31,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class PermissionServiceImpl implements PermissionService {
-
-    private static final String SUPER_ROLE_CODE = "R_SUPER";
 
     private final RoleMapper roleMapper;
     private final MenuMapper menuMapper;
@@ -209,12 +208,54 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
+    public Integer getUserHighestRoleLevel(String userId) {
+        return getUserHighestRoleLevels(Set.of(userId)).getOrDefault(userId, 0);
+    }
+
+    @Override
+    public Map<String, Integer> getUserHighestRoleLevels(Collection<String> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<String, Set<String>> userRoleIdMap = getUserRoleIds(userIds);
+        Set<String> allRoleIds = userRoleIdMap.values().stream()
+                .flatMap(Set::stream)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        Map<String, Integer> roleLevelMap = allRoleIds.isEmpty()
+                ? Map.of()
+                : roleMapper.selectList(new LambdaQueryWrapper<Role>()
+                                .eq(Role::getDeleted, 0)
+                                .in(Role::getId, allRoleIds))
+                        .stream()
+                        .collect(Collectors.toMap(
+                                Role::getId,
+                                role -> role.getRoleLevel() == null ? 0 : role.getRoleLevel(),
+                                (left, right) -> left,
+                                LinkedHashMap::new
+                        ));
+
+        Map<String, Integer> result = new LinkedHashMap<>();
+        for (String userId : userIds) {
+            int highestLevel = userRoleIdMap.getOrDefault(userId, Set.of()).stream()
+                    .map(roleLevelMap::get)
+                    .filter(Objects::nonNull)
+                    .max(Integer::compareTo)
+                    .orElse(0);
+            result.put(userId, highestLevel);
+        }
+        return result;
+    }
+
+    @Override
     public List<String> getUserPermissionMarks(String userId) {
         if (userId == null || userId.isBlank()) {
             return List.of();
         }
 
-        boolean isSuperAdmin = getUserRoleCodes(userId).stream().anyMatch(SUPER_ROLE_CODE::equals);
+        boolean isSuperAdmin = getUserRoleCodes(userId).stream().anyMatch(SystemRoleCode.R_SUPER::equals);
         LambdaQueryWrapper<Menu> wrapper = MenuQuerySupport.selectColumns(new LambdaQueryWrapper<Menu>())
                 .eq(Menu::getDeleted, 0)
                 .eq(Menu::getIsEnable, 1);
