@@ -4,6 +4,7 @@ import com.architecturepro.common.result.Result;
 import com.architecturepro.infrastructure.web.auth.dto.CaptchaDTO;
 import com.architecturepro.infrastructure.web.auth.dto.ForgotPasswordCodeCommand;
 import com.architecturepro.infrastructure.web.auth.dto.LoginCommand;
+import com.architecturepro.infrastructure.web.auth.dto.LoginRoleDTO;
 import com.architecturepro.infrastructure.web.auth.dto.RegisterCommand;
 import com.architecturepro.infrastructure.web.auth.dto.ResetPasswordCommand;
 import com.architecturepro.infrastructure.web.auth.dto.TokenDTO;
@@ -12,6 +13,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "登录认证", description = "登录认证相关接口")
 @RestController
@@ -28,6 +31,12 @@ public class LoginController {
     @GetMapping("/captcha")
     public Result<CaptchaDTO> getCaptcha() {
         return Result.ok(loginService.generateCaptcha());
+    }
+
+    @Operation(summary = "获取登录角色")
+    @GetMapping("/login-roles")
+    public Result<List<LoginRoleDTO>> listLoginRoles() {
+        return Result.ok(loginService.listLoginRoles());
     }
 
     @Operation(summary = "登录")

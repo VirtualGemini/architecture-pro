@@ -3,6 +3,7 @@ package com.architecturepro.infrastructure.web.auth.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
+import com.architecturepro.common.enums.RoleTypeEnum;
 import com.architecturepro.common.exception.ApiException;
 import com.architecturepro.common.exception.BusinessErrorCode;
 import com.architecturepro.email.core.EmailBuilder;
@@ -19,6 +20,7 @@ import com.architecturepro.infrastructure.persistence.UserMapper;
 import com.architecturepro.infrastructure.web.auth.dto.CaptchaDTO;
 import com.architecturepro.infrastructure.web.auth.dto.ForgotPasswordCodeCommand;
 import com.architecturepro.infrastructure.web.auth.dto.LoginCommand;
+import com.architecturepro.infrastructure.web.auth.dto.LoginRoleDTO;
 import com.architecturepro.infrastructure.web.auth.dto.RegisterCommand;
 import com.architecturepro.infrastructure.web.auth.dto.ResetPasswordCommand;
 import com.architecturepro.infrastructure.web.auth.dto.TokenDTO;
@@ -27,6 +29,10 @@ import com.architecturepro.infrastructure.web.auth.service.LoginService;
 import com.architecturepro.infrastructure.web.auth.service.PasswordCipherService;
 import com.wf.captcha.SpecCaptcha;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class LoginServiceImpl implements LoginService {
@@ -80,6 +86,24 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
+    public java.util.List<LoginRoleDTO> listLoginRoles() {
+        return roleMapper.selectList(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Role>()
+                        .eq(Role::getDeleted, 0)
+                        .eq(Role::getType, RoleTypeEnum.SYSTEM.getCode())
+                        .eq(Role::getEnabled, 1)
+                        .orderByDesc(Role::getRoleLevel)
+                        .orderByAsc(Role::getId))
+                .stream()
+                .map(role -> {
+                    LoginRoleDTO dto = new LoginRoleDTO();
+                    dto.setRoleName(role.getRoleName());
+                    dto.setRoleCode(role.getRoleCode());
+                    return dto;
+                })
+                .toList();
+    }
+
+    @Override
     public TokenDTO login(LoginCommand command) {
         validateCaptchaIfPresent(command.getCaptchaCode(), command.getCaptchaCodeKey());
 
@@ -87,11 +111,11 @@ public class LoginServiceImpl implements LoginService {
         String password = command.getPassword();
 
         if (username == null || username.isBlank()) {
-            throw new ApiException(BusinessErrorCode.USER_NOT_FOUND);
+            throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
         }
 
         if (password == null || password.isBlank()) {
-            throw new ApiException(BusinessErrorCode.PASSWORD_ERROR);
+            throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
         }
 
         User user = userMapper.selectOne(
@@ -101,19 +125,21 @@ public class LoginServiceImpl implements LoginService {
         );
 
         if (user == null) {
-            throw new ApiException(BusinessErrorCode.USER_NOT_FOUND);
+            throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
         }
 
         checkLoginLock(user);
 
         if (!passwordCipherService.matches(password, user.getPassword())) {
             increaseLoginFailCount(user);
-            throw new ApiException(BusinessErrorCode.PASSWORD_ERROR);
+            throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
         }
 
         if (Integer.valueOf(4).equals(user.getStatus())) {
             throw new ApiException(BusinessErrorCode.ACCOUNT_DISABLED);
         }
+
+        ensureUserHasLoginRole(user.getId(), command.getRoleCode());
 
         resetLoginFailCount(user);
         upgradePasswordIfNeeded(user, password);
@@ -123,6 +149,31 @@ public class LoginServiceImpl implements LoginService {
         String token = StpUtil.getTokenValue();
 
         return new TokenDTO(token, null);
+    }
+
+    private void ensureUserHasLoginRole(String userId, String roleCode) {
+        if (roleCode == null || roleCode.isBlank()) {
+            throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
+        }
+
+        Set<String> roleIds = userRoleMapper.selectAllByUserId(userId).stream()
+                .filter(relation -> Integer.valueOf(0).equals(relation.getDeleted()))
+                .map(UserRole::getRoleId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (roleIds.isEmpty()) {
+            throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
+        }
+
+        long matchedCount = roleMapper.selectCount(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Role>()
+                .eq(Role::getDeleted, 0)
+                .eq(Role::getType, RoleTypeEnum.SYSTEM.getCode())
+                .eq(Role::getEnabled, 1)
+                .eq(Role::getRoleCode, roleCode.trim())
+                .in(Role::getId, roleIds));
+        if (matchedCount <= 0) {
+            throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
+        }
     }
 
     @Override
