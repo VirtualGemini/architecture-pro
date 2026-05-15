@@ -19,7 +19,7 @@ logs/
 *.log.*
 
 # Tests
-*.src/test/
+**/src/test/
 test-output/
 
 # IDEs
