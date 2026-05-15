@@ -71,7 +71,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         Profile profile = getActiveProfile(userId);
 
         CurrentUserInfo currentUserInfo = new CurrentUserInfo();
-        currentUserInfo.setUserId(user.getId());
+        currentUserInfo.setUserId(normalizeNullable(user.getId()));
         currentUserInfo.setUserName(user.getUsername());
         currentUserInfo.setEmail(user.getEmail() == null ? "" : user.getEmail());
         currentUserInfo.setPhone(user.getPhone() == null ? "" : user.getPhone());

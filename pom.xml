@@ -109,6 +109,13 @@
                 <version>8.4.0</version>
             </dependency>
 
+            <!-- PostgreSQL Driver -->
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>42.7.7</version>
+            </dependency>
+
             <!-- Sa-Token -->
             <dependency>
                 <groupId>cn.dev33</groupId>

@@ -24,7 +24,7 @@ public class File extends BaseEntity {
     }
 
     public void setConfigId(String configId) {
-        this.configId = configId;
+        this.configId = normalizeIdentifier(configId);
     }
 
     public String getName() {

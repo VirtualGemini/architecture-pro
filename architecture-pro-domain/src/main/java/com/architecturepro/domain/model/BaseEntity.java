@@ -1,6 +1,8 @@
 package com.architecturepro.domain.model;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 
 import java.io.Serial;
@@ -23,9 +25,11 @@ public abstract class BaseEntity implements Serializable {
     private String id;
 
     /** 创建时间 */
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     /** 更新时间 */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
     /** 创建人 */
@@ -42,7 +46,7 @@ public abstract class BaseEntity implements Serializable {
     }
 
     public void setId(String id) {
-        this.id = id;
+        this.id = normalizeIdentifier(id);
     }
 
     public LocalDateTime getCreateTime() {
@@ -83,6 +87,14 @@ public abstract class BaseEntity implements Serializable {
 
     public void setDeleted(Integer deleted) {
         this.deleted = deleted;
+    }
+
+    protected static String normalizeIdentifier(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
     }
 
     @Override

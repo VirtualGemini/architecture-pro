@@ -48,7 +48,9 @@ public class DBFileClient extends AbstractFileClient<DBFileClientConfig> {
         if (CollUtil.isEmpty(list)) {
             return null;
         }
-        list.sort(Comparator.comparing(FileContent::getId));
+        list.sort(Comparator
+                .comparing(FileContent::getCreateTime, Comparator.nullsFirst(Comparator.naturalOrder()))
+                .thenComparing(FileContent::getUpdateTime, Comparator.nullsFirst(Comparator.naturalOrder())));
         return CollUtil.getLast(list).getContent();
     }
 }

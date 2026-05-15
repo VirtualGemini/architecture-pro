@@ -26,6 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -77,7 +79,7 @@ public class MenuServiceImpl implements MenuService {
                         .eq(Menu::getIsEnable, 1)
                         .in(Menu::getId, permittedMenuIds)
                         .orderByAsc(Menu::getSort)
-                        .orderByAsc(Menu::getId)
+                        .orderByAsc(Menu::getCreateTime)
         );
 
         Map<String, List<String>> menuRoleCodeMap = getMenuRoleCodes(menus.stream()
@@ -213,6 +215,7 @@ public class MenuServiceImpl implements MenuService {
                 .in(Menu::getId, deleteIds)
                 .eq(Menu::getDeleted, 0)
                 .set(Menu::getDeleted, 1)
+                .set(Menu::getUpdateTime, LocalDateTime.now(ZoneOffset.UTC))
                 .set(Menu::getUpdateBy, operator));
         return true;
     }
@@ -229,9 +232,9 @@ public class MenuServiceImpl implements MenuService {
             if (sortCompare != 0) {
                 return sortCompare;
             }
-            String leftId = left.getId() == null ? "~" : left.getId();
-            String rightId = right.getId() == null ? "~" : right.getId();
-            return leftId.compareTo(rightId);
+            String leftName = left.getName() == null ? "~" : left.getName();
+            String rightName = right.getName() == null ? "~" : right.getName();
+            return leftName.compareTo(rightName);
         });
         for (MenuRouteDTO route : routes) {
             if (route.getChildren() != null && !route.getChildren().isEmpty()) {

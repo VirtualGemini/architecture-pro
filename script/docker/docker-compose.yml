@@ -8,8 +8,23 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ../sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../sql/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
       - mysql-data:/var/lib/mysql
+
+  postgresql:
+    image: postgres:18.4
+    container_name: architecture-pro-postgresql
+    restart: always
+    environment:
+      POSTGRES_DB: architecture_pro
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ../sql/postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      # postgres 18+ requires mounting the parent directory instead of PGDATA itself.
+      - postgresql-data:/var/lib/postgresql
 
   redis:
     image: redis:7-alpine
@@ -22,4 +37,5 @@ services:
 
 volumes:
   mysql-data:
+  postgresql-data:
   redis-data:

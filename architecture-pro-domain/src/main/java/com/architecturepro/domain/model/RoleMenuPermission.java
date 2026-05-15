@@ -13,7 +13,7 @@ public class RoleMenuPermission extends BaseEntity {
     }
 
     public void setRoleId(String roleId) {
-        this.roleId = roleId;
+        this.roleId = normalizeIdentifier(roleId);
     }
 
     public String getMenuId() {
@@ -21,6 +21,6 @@ public class RoleMenuPermission extends BaseEntity {
     }
 
     public void setMenuId(String menuId) {
-        this.menuId = menuId;
+        this.menuId = normalizeIdentifier(menuId);
     }
 }

@@ -14,7 +14,7 @@ public class UserRole extends BaseEntity {
     }
 
     public void setUserId(String userId) {
-        this.userId = userId;
+        this.userId = normalizeIdentifier(userId);
     }
 
     public String getRoleId() {
@@ -22,6 +22,6 @@ public class UserRole extends BaseEntity {
     }
 
     public void setRoleId(String roleId) {
-        this.roleId = roleId;
+        this.roleId = normalizeIdentifier(roleId);
     }
 }

@@ -32,6 +32,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -94,7 +95,8 @@ public class RoleServiceImpl implements RoleService {
             LocalDateTime endOfDay = RequestDateTimeFormatter.toUtcEndOfDay(LocalDate.parse(query.getEndTime()));
             wrapper.le(Role::getCreateTime, endOfDay);
         }
-        wrapper.orderByDesc(Role::getId);
+        wrapper.orderByDesc(Role::getCreateTime)
+                .orderByDesc(Role::getUpdateTime);
 
         Page<Role> result = roleMapper.selectPage(page, wrapper);
 
@@ -156,6 +158,7 @@ public class RoleServiceImpl implements RoleService {
                 .eq(Role::getId, roleId)
                 .eq(Role::getDeleted, 0)
                 .set(Role::getDeleted, 1)
+                .set(Role::getUpdateTime, LocalDateTime.now(ZoneOffset.UTC))
                 .set(Role::getUpdateBy, currentOperator()));
         roleMenuPermissionMapper.delete(new LambdaQueryWrapper<RoleMenuPermission>().eq(RoleMenuPermission::getRoleId, roleId));
         return role != null;
@@ -183,7 +186,7 @@ public class RoleServiceImpl implements RoleService {
                 .eq(Menu::getDeleted, 0)
                 .eq(Menu::getIsEnable, 1)
                 .orderByAsc(Menu::getSort)
-                .orderByAsc(Menu::getId));
+                .orderByAsc(Menu::getCreateTime));
         if (menus.isEmpty()) {
             return List.of();
         }

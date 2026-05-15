@@ -32,7 +32,7 @@ public class Menu extends BaseEntity {
     }
 
     public void setParentId(String parentId) {
-        this.parentId = parentId;
+        this.parentId = normalizeIdentifier(parentId);
     }
 
     public String getMenuType() {

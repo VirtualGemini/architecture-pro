@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Mapper
@@ -23,6 +25,7 @@ public interface FileConfigMapper extends BaseMapperExt<FileConfig> {
     default void updateNoneMaster() {
         update(new LambdaUpdateWrapper<FileConfig>()
                 .set(FileConfig::getMaster, false)
+                .set(FileConfig::getUpdateTime, LocalDateTime.now(ZoneOffset.UTC))
                 .eq(FileConfig::getMaster, true));
     }
 }

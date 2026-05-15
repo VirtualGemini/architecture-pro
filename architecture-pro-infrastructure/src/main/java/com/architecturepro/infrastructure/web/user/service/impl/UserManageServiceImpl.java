@@ -28,6 +28,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -103,7 +105,8 @@ public class UserManageServiceImpl implements UserManageService {
             }
             wrapper.in(User::getId, genderUserIds);
         }
-        wrapper.orderByDesc(User::getId);
+        wrapper.orderByDesc(User::getCreateTime)
+                .orderByDesc(User::getUpdateTime);
 
         String statusFilter = StringUtils.hasText(query.getStatus()) ? query.getStatus().trim() : null;
         boolean activeStatusFilter = ActiveUserStatusService.STATUS_ONLINE.equals(statusFilter)
@@ -210,12 +213,14 @@ public class UserManageServiceImpl implements UserManageService {
                 .eq(User::getId, userId)
                 .eq(User::getDeleted, 0)
                 .set(User::getDeleted, 1)
+                .set(User::getUpdateTime, LocalDateTime.now(ZoneOffset.UTC))
                 .set(User::getUpdateBy, operator));
 
         profileMapper.update(null, new LambdaUpdateWrapper<Profile>()
                 .eq(Profile::getUserId, userId)
                 .eq(Profile::getDeleted, 0)
                 .set(Profile::getDeleted, 1)
+                .set(Profile::getUpdateTime, LocalDateTime.now(ZoneOffset.UTC))
                 .set(Profile::getUpdateBy, operator));
 
         List<String> activeRelationIds = userRoleMapper.selectAllByUserId(userId).stream()
@@ -459,15 +464,22 @@ public class UserManageServiceImpl implements UserManageService {
     }
 
     private UserRole preferLatestRelation(UserRole left, UserRole right) {
-        String leftId = left.getId();
-        String rightId = right.getId();
-        if (leftId == null) {
+        if (left == null) {
             return right;
         }
-        if (rightId == null) {
+        if (right == null) {
             return left;
         }
-        return rightId.compareTo(leftId) > 0 ? right : left;
+        if (right.getUpdateTime() != null && (left.getUpdateTime() == null || right.getUpdateTime().isAfter(left.getUpdateTime()))) {
+            return right;
+        }
+        if (left.getUpdateTime() != null && right.getUpdateTime() == null) {
+            return left;
+        }
+        if (right.getCreateTime() != null && (left.getCreateTime() == null || right.getCreateTime().isAfter(left.getCreateTime()))) {
+            return right;
+        }
+        return left;
     }
 
     private Integer normalizeGender(Integer gender) {

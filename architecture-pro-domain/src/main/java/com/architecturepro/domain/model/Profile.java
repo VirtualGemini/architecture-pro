@@ -32,7 +32,7 @@ public class Profile extends BaseEntity {
     }
 
     public void setUserId(String userId) {
-        this.userId = userId;
+        this.userId = normalizeIdentifier(userId);
     }
 
     public String getNickname() {

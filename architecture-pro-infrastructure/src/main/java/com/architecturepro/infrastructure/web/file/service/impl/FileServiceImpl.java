@@ -60,7 +60,8 @@ public class FileServiceImpl implements FileService {
         LambdaQueryWrapper<File> wrapper = new LambdaQueryWrapper<File>()
                 .like(StrUtil.isNotEmpty(pageReqVO.getPath()), File::getPath, pageReqVO.getPath())
                 .like(StrUtil.isNotEmpty(pageReqVO.getType()), File::getType, pageReqVO.getType())
-                .orderByDesc(File::getId);
+                .orderByDesc(File::getCreateTime)
+                .orderByDesc(File::getUpdateTime);
         Page<File> page = fileMapper.selectPage(
                 new Page<>(pageReqVO.getPage(), pageReqVO.getSize()), wrapper);
         return PageResult.of(page.getTotal(), page.getCurrent(), page.getSize(),

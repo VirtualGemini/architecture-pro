@@ -23,9 +23,11 @@ public class MyBatisPlusConfig {
      * 分页插件
      */
     @Bean
-    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+    public MybatisPlusInterceptor mybatisPlusInterceptor(ArchitectureProDataSourceProperties properties,
+                                                         DatabaseDialectRegistry dialectRegistry) {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        DbType dbType = dialectRegistry.getRequiredDialect(properties.getType()).getMybatisDbType();
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(dbType));
         return interceptor;
     }
 
@@ -37,13 +39,14 @@ public class MyBatisPlusConfig {
         return new MetaObjectHandler() {
             @Override
             public void insertFill(MetaObject metaObject) {
-                this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now(ZoneOffset.UTC));
-                this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now(ZoneOffset.UTC));
+                LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+                this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, now);
+                this.setFieldValByName("updateTime", now, metaObject);
             }
 
             @Override
             public void updateFill(MetaObject metaObject) {
-                this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now(ZoneOffset.UTC));
+                this.setFieldValByName("updateTime", LocalDateTime.now(ZoneOffset.UTC), metaObject);
             }
         };
     }

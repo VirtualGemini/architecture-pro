@@ -1,14 +1,5 @@
 # 开发环境配置
 spring:
-  datasource:
-    # MySQL 驱动类
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    # 开发环境数据库连接串
-    url: jdbc:mysql://localhost:3306/architecture_pro?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT&allowPublicKeyRetrieval=true
-    # 开发环境数据库用户名
-    username: root
-    # 开发环境数据库密码
-    password: root
   data:
     redis:
       # 开发环境 Redis 主机
@@ -37,6 +28,23 @@ logging:
     path: ./log
 
 architecture-pro:
+  datasource:
+    # 当前激活数据库类型，默认推荐 PostgreSQL；可选 mysql / postgresql
+    type: ${DB_TYPE:postgresql}
+    # 并存的多套数据库连接配置
+    configs:
+      mysql:
+        # MySQL 连接
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: ${MYSQL_DB_URL:jdbc:mysql://localhost:3306/architecture_pro?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT&allowPublicKeyRetrieval=true}
+        username: ${MYSQL_DB_USERNAME:root}
+        password: ${MYSQL_DB_PASSWORD:root}
+      postgresql:
+        # PostgreSQL 18.x 连接
+        driver-class-name: org.postgresql.Driver
+        url: ${POSTGRESQL_DB_URL:jdbc:postgresql://localhost:5432/architecture_pro}
+        username: ${POSTGRESQL_DB_USERNAME:postgres}
+        password: ${POSTGRESQL_DB_PASSWORD:postgres}
   security:
     # 开发环境默认不公开 Swagger
     swagger-public-enabled: false

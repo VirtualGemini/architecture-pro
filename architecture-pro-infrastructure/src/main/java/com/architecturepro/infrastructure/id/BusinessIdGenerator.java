@@ -1,76 +1,48 @@
 package com.architecturepro.infrastructure.id;
 
-import com.architecturepro.infrastructure.persistence.IdSequenceMapper;
+import cn.hutool.core.lang.UUID;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class BusinessIdGenerator {
 
-    private static final int MAX_SEQUENCE = 9999999;
-
-    private final IdSequenceMapper idSequenceMapper;
-
-    public BusinessIdGenerator(IdSequenceMapper idSequenceMapper) {
-        this.idSequenceMapper = idSequenceMapper;
-    }
-
-    @Transactional(rollbackFor = Exception.class)
     public String nextUserId() {
-        return next("user", "U");
+        return next();
     }
 
-    @Transactional(rollbackFor = Exception.class)
     public String nextRoleId() {
-        return next("role", "R");
+        return next();
     }
 
-    @Transactional(rollbackFor = Exception.class)
     public String nextMenuId() {
-        return next("menu", "M");
+        return next();
     }
 
-    @Transactional(rollbackFor = Exception.class)
     public String nextProfileId() {
-        return next("profile", "F");
+        return next();
     }
 
-    @Transactional(rollbackFor = Exception.class)
     public String nextUserRoleId() {
-        return next("user_role", "L");
+        return next();
     }
 
-    @Transactional(rollbackFor = Exception.class)
     public String nextRoleMenuPermissionId() {
-        return next("role_menu_permission", "P");
+        return next();
     }
 
-    @Transactional(rollbackFor = Exception.class)
     public String nextFileConfigId() {
-        return next("file_config", "C");
+        return next();
     }
 
-    @Transactional(rollbackFor = Exception.class)
     public String nextFileId() {
-        return next("file", "F");
+        return next();
     }
 
-    @Transactional(rollbackFor = Exception.class)
     public String nextFileContentId() {
-        return next("file_content", "D");
+        return next();
     }
 
-    private String next(String bizCode, String prefix) {
-        Integer currentValue = idSequenceMapper.selectCurrentValueForUpdate(bizCode);
-        int nextValue = currentValue == null ? 1 : currentValue + 1;
-        if (nextValue > MAX_SEQUENCE) {
-            throw new IllegalStateException("ID sequence overflow for bizCode=" + bizCode);
-        }
-        if (currentValue == null) {
-            idSequenceMapper.insert(bizCode, nextValue);
-        } else {
-            idSequenceMapper.update(bizCode, nextValue);
-        }
-        return prefix + String.format("%07d", nextValue);
+    private String next() {
+        return UUID.fastUUID().toString(true);
     }
 }
