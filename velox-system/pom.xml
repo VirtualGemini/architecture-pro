@@ -19,15 +19,15 @@
         </dependency>
         <dependency>
             <groupId>com.velox</groupId>
-            <artifactId>velox-bootstrap-persistence</artifactId>
+            <artifactId>velox-infra-persistence</artifactId>
         </dependency>
         <dependency>
             <groupId>com.velox</groupId>
-            <artifactId>velox-web-starter</artifactId>
+            <artifactId>velox-web-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>com.velox</groupId>
-            <artifactId>velox-security-starter</artifactId>
+            <artifactId>velox-security-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -35,19 +35,19 @@
         </dependency>
         <dependency>
             <groupId>com.velox</groupId>
-            <artifactId>velox-file-starter</artifactId>
+            <artifactId>velox-file-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>com.velox</groupId>
-            <artifactId>velox-email-starter</artifactId>
+            <artifactId>velox-email-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>com.velox</groupId>
-            <artifactId>velox-id-generator-starter</artifactId>
+            <artifactId>velox-id-generator-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>com.velox</groupId>
-            <artifactId>velox-redis-starter</artifactId>
+            <artifactId>velox-redis-spring-boot-starter</artifactId>
         </dependency>
 
         <dependency>

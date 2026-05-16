@@ -40,17 +40,17 @@ It includes:
 velox-pro/
 ├── velox-dependencies    # Unified third-party version management
 ├── velox-common          # Business shared result, exception, i18n and DDD base classes
-├── velox-framework/
-│   ├── velox-web-starter
-│   ├── velox-security-starter
-│   ├── velox-persistence-starter
-│   ├── velox-file-starter
-│   ├── velox-email-starter
-│   ├── velox-id-generator-starter
-│   └── velox-redis-starter
-├── velox-bootstrap/
-│   └── velox-bootstrap-persistence   # Product-level Mapper scan and assembly policy
-├── velox-system          # Business modules
+├── velox-framework/      # Independent starter collection
+│   ├── velox-web-spring-boot-starter
+│   ├── velox-security-spring-boot-starter
+│   ├── velox-persistence-spring-boot-starter
+│   ├── velox-file-spring-boot-starter
+│   ├── velox-email-spring-boot-starter
+│   ├── velox-id-generator-spring-boot-starter
+│   └── velox-redis-spring-boot-starter
+├── velox-infra/          # Product-level starter ingress
+│   └── velox-infra-persistence
+├── velox-system          # Business modules, consuming starter capabilities only
 └── velox-server          # Spring Boot startup module
 ```
 
@@ -124,7 +124,7 @@ Supported storage implementations in the codebase:
 - database storage
 - S3-compatible object storage
 
-The database storage provider is implemented in `velox-system`, while `velox-file-starter` only exposes the SPI and built-in generic providers.
+The database storage provider is implemented in `velox-system`, while `velox-file-spring-boot-starter` only exposes the SPI and built-in generic providers.
 
 ### 6. File Configuration Management
 
@@ -138,7 +138,7 @@ The database storage provider is implemented in `velox-system`, while `velox-fil
 
 ### 7. Email Module
 
-`velox-email-starter` is designed as a hot-pluggable capability starter.
+`velox-email-spring-boot-starter` is a self-contained starter.
 
 Features:
 
@@ -156,6 +156,8 @@ Features:
 - The frontend consumes backend-provided menu data for dynamic routing
 - Redis is used for captcha, password reset verification codes, and active user status
 - Swagger/OpenAPI support exists but is disabled by default in development and production profiles
+- `velox-infra` is the product-facing layer for starter wiring and configuration
+- `velox-system` consumes capabilities and does not care about starter internals
 
 ## Configuration
 

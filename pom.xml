@@ -15,7 +15,7 @@
         <module>velox-dependencies</module>
         <module>velox-common</module>
         <module>velox-framework</module>
-        <module>velox-bootstrap</module>
+        <module>velox-infra</module>
         <module>velox-system</module>
         <module>velox-server</module>
     </modules>
@@ -48,47 +48,47 @@
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-web-starter</artifactId>
+                <artifactId>velox-web-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-security-starter</artifactId>
+                <artifactId>velox-security-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-persistence-starter</artifactId>
+                <artifactId>velox-persistence-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-file-starter</artifactId>
+                <artifactId>velox-file-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-email-starter</artifactId>
+                <artifactId>velox-email-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-id-generator-starter</artifactId>
+                <artifactId>velox-id-generator-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-redis-starter</artifactId>
+                <artifactId>velox-redis-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-bootstrap</artifactId>
+                <artifactId>velox-infra</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-bootstrap-persistence</artifactId>
+                <artifactId>velox-infra-persistence</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

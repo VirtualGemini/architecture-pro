@@ -40,17 +40,17 @@
 velox-pro/
 ├── velox-dependencies    # 统一第三方版本管理
 ├── velox-common          # 业务共享返回、异常、多语言文案与 DDD 基类
-├── velox-framework/
-│   ├── velox-web-starter
-│   ├── velox-security-starter
-│   ├── velox-persistence-starter
-│   ├── velox-file-starter
-│   ├── velox-email-starter
-│   ├── velox-id-generator-starter
-│   └── velox-redis-starter
-├── velox-bootstrap/
-│   └── velox-bootstrap-persistence   # 产品级 Mapper 扫描与装配策略
-├── velox-system          # 业务模块
+├── velox-framework/      # 彼此独立的 starter 集合
+│   ├── velox-web-spring-boot-starter
+│   ├── velox-security-spring-boot-starter
+│   ├── velox-persistence-spring-boot-starter
+│   ├── velox-file-spring-boot-starter
+│   ├── velox-email-spring-boot-starter
+│   ├── velox-id-generator-spring-boot-starter
+│   └── velox-redis-spring-boot-starter
+├── velox-infra/          # 产品级 starter 接入层
+│   └── velox-infra-persistence
+├── velox-system          # 业务模块，只消费 starter 能力
 └── velox-server          # Spring Boot 启动模块
 ```
 
@@ -124,7 +124,7 @@ velox-pro/
 - 数据库存储
 - S3 兼容对象存储
 
-其中数据库存储 provider 实现位于 `velox-system`，`velox-file-starter` 只保留 SPI、通用 provider 与自动装配。
+其中数据库存储 provider 实现位于 `velox-system`，`velox-file-spring-boot-starter` 只保留 SPI、通用 provider 与自动装配。
 
 ### 6. 文件配置管理
 
@@ -138,7 +138,7 @@ velox-pro/
 
 ### 7. 邮件模块
 
-`velox-email-starter` 是一个可热插拔能力 starter。
+`velox-email-spring-boot-starter` 是一个自包含 starter。
 
 能力包括：
 
@@ -156,6 +156,8 @@ velox-pro/
 - 前端动态路由依赖后端返回的菜单数据
 - Redis 用于图形验证码、重置密码验证码以及在线状态维护
 - Swagger/OpenAPI 能力已接入，但在开发与生产环境默认关闭
+- `velox-infra` 只负责 starter 接入与产品级配置
+- `velox-system` 只消费能力，不关心 starter 内部实现
 
 ## 配置说明
 
