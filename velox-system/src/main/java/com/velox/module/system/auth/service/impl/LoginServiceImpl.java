@@ -6,7 +6,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.velox.module.system.common.enums.RoleTypeEnum;
 import com.velox.common.exception.ApiException;
 import com.velox.common.exception.BusinessErrorCode;
-import com.velox.email.core.EmailBuilder;
+import com.velox.email.api.builder.EmailBuilder;
 import com.velox.module.system.domain.model.Profile;
 import com.velox.module.system.domain.model.Role;
 import com.velox.module.system.domain.model.User;
