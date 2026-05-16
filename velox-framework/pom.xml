@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.velox</groupId>
+        <artifactId>velox</artifactId>
+        <version>1.0.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>velox-framework</artifactId>
+    <packaging>pom</packaging>
+    <description>Velox framework modules - capability starters only</description>
+
+    <modules>
+        <module>velox-web-starter</module>
+        <module>velox-security-starter</module>
+        <module>velox-persistence-starter</module>
+        <module>velox-file-starter</module>
+        <module>velox-email-starter</module>
+        <module>velox-id-generator-starter</module>
+        <module>velox-redis-starter</module>
+    </modules>
+</project>

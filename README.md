@@ -6,7 +6,7 @@
 
 ## Overview
 
-`velox` is the backend of the `arc-pro` project. It is built around a layered DDD structure and provides the real API foundation for the admin frontend derived from `art-design-pro`.
+`velox-pro` is the backend of the `velox` project. It is built around a layered DDD structure and provides the real API foundation for the admin frontend derived from `art-design-pro`.
 
 It includes:
 
@@ -38,11 +38,21 @@ It includes:
 
 ```text
 velox-pro/
-├── velox-common          # Common result, exception, enums, logging annotations
-├── velox-domain          # DDD domain model, repository contracts, domain services, events
-├── velox-email           # Pluggable email auto-configuration and sending module
-├── velox-infrastructure  # Web, persistence, security, file, logging, integration layer
-└── velox-starter         # Spring Boot startup module
+├── velox-dependencies    # Unified third-party version management
+├── velox-common          # Business shared result, exception, i18n and DDD base classes
+├── velox-framework/
+│   ├── velox-web-starter
+│   ├── velox-security-starter
+│   ├── velox-persistence-starter
+│   ├── velox-file-starter
+│   ├── velox-email-starter
+│   ├── velox-id-generator-starter
+│   └── velox-redis-starter
+├── velox-infra/
+│   ├── velox-infra-web   # Product-level Web assembly and policy
+│   └── velox-infra-persistence
+├── velox-system          # Business modules
+└── velox-server          # Spring Boot startup module
 ```
 
 ## Functional Coverage
@@ -115,6 +125,8 @@ Supported storage implementations in the codebase:
 - database storage
 - S3-compatible object storage
 
+The database storage provider is implemented in `velox-system`, while `velox-file-starter` only exposes the SPI and built-in generic providers.
+
 ### 6. File Configuration Management
 
 - Create config: `POST /api/file-config/create`
@@ -127,7 +139,7 @@ Supported storage implementations in the codebase:
 
 ### 7. Email Module
 
-The `velox-email` module is designed as a pluggable dependency.
+`velox-email-starter` is designed as a hot-pluggable capability starter.
 
 Features:
 
@@ -188,7 +200,7 @@ mvn clean compile
 Run the application:
 
 ```bash
-cd velox-pro/velox-starter
+cd velox-pro/velox-server
 mvn spring-boot:run
 ```
 

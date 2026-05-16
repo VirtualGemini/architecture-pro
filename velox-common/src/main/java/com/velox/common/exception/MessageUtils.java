@@ -2,12 +2,10 @@ package com.velox.common.exception;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.stereotype.Component;
 
 /**
  * i18n 消息工具类
  */
-@Component
 public class MessageUtils {
 
     private static MessageSource messageSource;

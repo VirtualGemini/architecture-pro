@@ -1,0 +1,3 @@
+com.velox.framework.context.autoconfigure.VeloxContextAutoConfiguration
+com.velox.framework.logging.autoconfigure.VeloxLoggingAutoConfiguration
+com.velox.framework.tracing.autoconfigure.VeloxTracingAutoConfiguration

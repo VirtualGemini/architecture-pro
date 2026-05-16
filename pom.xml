@@ -12,11 +12,12 @@
     <name>velox</name>
 
     <modules>
+        <module>velox-dependencies</module>
         <module>velox-common</module>
-        <module>velox-domain</module>
-        <module>velox-email</module>
-        <module>velox-infrastructure</module>
-        <module>velox-starter</module>
+        <module>velox-framework</module>
+        <module>velox-infra</module>
+        <module>velox-system</module>
+        <module>velox-server</module>
     </modules>
 
     <properties>
@@ -26,26 +27,20 @@
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
         <spring.boot.version>3.4.5</spring.boot.version>
-        <mybatis-plus.version>3.5.12</mybatis-plus.version>
-        <springdoc.version>2.8.6</springdoc.version>
-        <hutool.version>5.8.34</hutool.version>
-        <guava.version>33.4.8-jre</guava.version>
-        <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
+        <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
+        <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- Spring Boot BOM -->
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.boot.version}</version>
+                <groupId>com.velox</groupId>
+                <artifactId>velox-dependencies</artifactId>
+                <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
 
-            <!-- Project Modules -->
             <dependency>
                 <groupId>com.velox</groupId>
                 <artifactId>velox-common</artifactId>
@@ -53,81 +48,63 @@
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-domain</artifactId>
+                <artifactId>velox-web-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-email</artifactId>
+                <artifactId>velox-security-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-infrastructure</artifactId>
+                <artifactId>velox-persistence-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
-            <!-- MyBatis Plus -->
             <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
-                <version>${mybatis-plus.version}</version>
+                <groupId>com.velox</groupId>
+                <artifactId>velox-file-starter</artifactId>
+                <version>${project.version}</version>
             </dependency>
-
-            <!-- MyBatis Plus JSQLParser -->
             <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-jsqlparser</artifactId>
-                <version>${mybatis-plus.version}</version>
+                <groupId>com.velox</groupId>
+                <artifactId>velox-email-starter</artifactId>
+                <version>${project.version}</version>
             </dependency>
-
-            <!-- SpringDoc OpenAPI -->
             <dependency>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-                <version>${springdoc.version}</version>
+                <groupId>com.velox</groupId>
+                <artifactId>velox-id-generator-starter</artifactId>
+                <version>${project.version}</version>
             </dependency>
-
-            <!-- Hutool -->
             <dependency>
-                <groupId>cn.hutool</groupId>
-                <artifactId>hutool-all</artifactId>
-                <version>${hutool.version}</version>
+                <groupId>com.velox</groupId>
+                <artifactId>velox-redis-starter</artifactId>
+                <version>${project.version}</version>
             </dependency>
-
-            <!-- Guava -->
             <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
+                <groupId>com.velox</groupId>
+                <artifactId>velox-infra</artifactId>
+                <version>${project.version}</version>
             </dependency>
-
-            <!-- MySQL Driver -->
             <dependency>
-                <groupId>com.mysql</groupId>
-                <artifactId>mysql-connector-j</artifactId>
-                <version>8.4.0</version>
+                <groupId>com.velox</groupId>
+                <artifactId>velox-infra-web</artifactId>
+                <version>${project.version}</version>
             </dependency>
-
-            <!-- PostgreSQL Driver -->
             <dependency>
-                <groupId>org.postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>42.7.7</version>
+                <groupId>com.velox</groupId>
+                <artifactId>velox-infra-persistence</artifactId>
+                <version>${project.version}</version>
             </dependency>
-
-            <!-- Sa-Token -->
             <dependency>
-                <groupId>cn.dev33</groupId>
-                <artifactId>sa-token-spring-boot3-starter</artifactId>
-                <version>1.40.0</version>
+                <groupId>com.velox</groupId>
+                <artifactId>velox-system</artifactId>
+                <version>${project.version}</version>
             </dependency>
-
-            <!-- Kaptcha 验证码 -->
             <dependency>
-                <groupId>com.github.whvcse</groupId>
-                <artifactId>easy-captcha</artifactId>
-                <version>1.6.2</version>
+                <groupId>com.velox</groupId>
+                <artifactId>velox-server</artifactId>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -144,7 +121,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven-compiler-plugin.version}</version>
+                    <version>${maven.compiler.plugin.version}</version>
                     <configuration>
                         <source>${java.version}</source>
                         <target>${java.version}</target>
@@ -155,7 +132,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${maven-surefire-plugin.version}</version>
+                    <version>${maven.surefire.plugin.version}</version>
                     <configuration>
                         <skipTests>true</skipTests>
                     </configuration>

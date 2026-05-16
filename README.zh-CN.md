@@ -6,7 +6,7 @@
 
 ## 项目概述
 
-`velox` 是 `arc-pro` 项目的后端部分，采用分层 DDD 结构构建，为基于 `art-design-pro` 改造的管理后台前端提供真实 API 支撑。
+`velox-pro` 是 `velox` 项目的后端部分，采用分层 DDD 结构构建，为基于 `art-design-pro` 改造的管理后台前端提供真实 API 支撑。
 
 当前后端覆盖：
 
@@ -38,11 +38,21 @@
 
 ```text
 velox-pro/
-├── velox-common          # 通用返回、异常、枚举、日志注解
-├── velox-domain          # DDD 领域模型、仓储契约、领域服务、领域事件
-├── velox-email           # 可插拔邮件自动配置与发送模块
-├── velox-infrastructure  # Web、持久化、安全、文件、日志、集成层
-└── velox-starter         # Spring Boot 启动模块
+├── velox-dependencies    # 统一第三方版本管理
+├── velox-common          # 业务共享返回、异常、多语言文案与 DDD 基类
+├── velox-framework/
+│   ├── velox-web-starter
+│   ├── velox-security-starter
+│   ├── velox-persistence-starter
+│   ├── velox-file-starter
+│   ├── velox-email-starter
+│   ├── velox-id-generator-starter
+│   └── velox-redis-starter
+├── velox-infra/
+│   ├── velox-infra-web   # 产品级 Web 组合与策略
+│   └── velox-infra-persistence
+├── velox-system          # 业务模块
+└── velox-server          # Spring Boot 启动模块
 ```
 
 ## 功能全览
@@ -115,6 +125,8 @@ velox-pro/
 - 数据库存储
 - S3 兼容对象存储
 
+其中数据库存储 provider 实现位于 `velox-system`，`velox-file-starter` 只保留 SPI、通用 provider 与自动装配。
+
 ### 6. 文件配置管理
 
 - 创建配置：`POST /api/file-config/create`
@@ -127,7 +139,7 @@ velox-pro/
 
 ### 7. 邮件模块
 
-`velox-email` 是一个可插拔子模块。
+`velox-email-starter` 是一个可热插拔能力 starter。
 
 能力包括：
 
@@ -189,7 +201,7 @@ mvn clean compile
 启动应用：
 
 ```bash
-cd velox-pro/velox-starter
+cd velox-pro/velox-server
 mvn spring-boot:run
 ```
 

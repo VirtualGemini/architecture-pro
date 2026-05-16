@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.velox</groupId>
+        <artifactId>velox</artifactId>
+        <version>1.0.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>velox-infra</artifactId>
+    <packaging>pom</packaging>
+    <description>基础设施策略层聚合模块 - 保留产品级 Web 与持久化组合策略</description>
+
+    <modules>
+        <module>velox-infra-web</module>
+        <module>velox-infra-persistence</module>
+    </modules>
+</project>
