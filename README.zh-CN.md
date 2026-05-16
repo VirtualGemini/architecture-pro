@@ -48,9 +48,8 @@ velox-pro/
 │   ├── velox-email-starter
 │   ├── velox-id-generator-starter
 │   └── velox-redis-starter
-├── velox-infra/
-│   ├── velox-infra-web   # 产品级 Web 组合与策略
-│   └── velox-infra-persistence
+├── velox-bootstrap/
+│   └── velox-bootstrap-persistence   # 产品级 Mapper 扫描与装配策略
 ├── velox-system          # 业务模块
 └── velox-server          # Spring Boot 启动模块
 ```

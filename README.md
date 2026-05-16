@@ -48,9 +48,8 @@ velox-pro/
 │   ├── velox-email-starter
 │   ├── velox-id-generator-starter
 │   └── velox-redis-starter
-├── velox-infra/
-│   ├── velox-infra-web   # Product-level Web assembly and policy
-│   └── velox-infra-persistence
+├── velox-bootstrap/
+│   └── velox-bootstrap-persistence   # Product-level Mapper scan and assembly policy
 ├── velox-system          # Business modules
 └── velox-server          # Spring Boot startup module
 ```

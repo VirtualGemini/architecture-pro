@@ -9,12 +9,11 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>velox-infra</artifactId>
+    <artifactId>velox-bootstrap</artifactId>
     <packaging>pom</packaging>
-    <description>基础设施策略层聚合模块 - 保留产品级 Web 与持久化组合策略</description>
+    <description>产品启动装配层聚合模块 - 保留业务级扫描与产品默认组合策略</description>
 
     <modules>
-        <module>velox-infra-web</module>
-        <module>velox-infra-persistence</module>
+        <module>velox-bootstrap-persistence</module>
     </modules>
 </project>

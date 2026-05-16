@@ -1,42 +1,40 @@
-package com.velox.module.infra.web.config;
+package com.velox.framework.web.autoconfigure;
 
-import com.velox.framework.config.VeloxProperties;
 import com.velox.framework.config.SecurityProperties;
+import com.velox.framework.config.VeloxProperties;
 import com.velox.framework.log.RequestLogInterceptor;
 import com.velox.framework.web.RequestTimeZoneFilter;
 import com.velox.framework.web.TraceIdFilter;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.method.HandlerTypePredicate;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
-/**
- * Web 配置
- */
-@Configuration
-public class VeloxWebMvcConfiguration implements WebMvcConfigurer {
+@AutoConfiguration
+@ConditionalOnBean({VeloxProperties.class, SecurityProperties.class})
+public class VeloxWebMvcAutoConfiguration implements WebMvcConfigurer {
 
     private final SecurityProperties securityProperties;
     private final VeloxProperties veloxProperties;
     private final RequestLogInterceptor requestLogInterceptor;
 
-    public VeloxWebMvcConfiguration(SecurityProperties securityProperties,
-                                    VeloxProperties veloxProperties,
-                                    RequestLogInterceptor requestLogInterceptor) {
+    public VeloxWebMvcAutoConfiguration(SecurityProperties securityProperties,
+                                        VeloxProperties veloxProperties,
+                                        RequestLogInterceptor requestLogInterceptor) {
         this.securityProperties = securityProperties;
         this.veloxProperties = veloxProperties;
         this.requestLogInterceptor = requestLogInterceptor;
     }
 
-    /**
-     * 跨域配置
-     */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         List<String> allowedOriginPatterns = securityProperties.getCors().getAllowedOriginPatterns();
@@ -54,7 +52,7 @@ public class VeloxWebMvcConfiguration implements WebMvcConfigurer {
     }
 
     @Override
-    public void configurePathMatch(org.springframework.web.servlet.config.annotation.PathMatchConfigurer configurer) {
+    public void configurePathMatch(PathMatchConfigurer configurer) {
         String normalizedPrefix = normalizePrefix(veloxProperties.getApiPrefix());
         if (!StringUtils.hasText(normalizedPrefix)) {
             return;
@@ -67,14 +65,12 @@ public class VeloxWebMvcConfiguration implements WebMvcConfigurer {
     }
 
     @Override
-    public void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
+    public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(requestLogInterceptor).addPathPatterns("/**");
     }
 
-    /**
-     * 注册 TraceId 过滤器
-     */
     @Bean
+    @ConditionalOnBean(TraceIdFilter.class)
     public FilterRegistrationBean<TraceIdFilter> traceIdFilterRegistration(TraceIdFilter traceIdFilter) {
         FilterRegistrationBean<TraceIdFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(traceIdFilter);

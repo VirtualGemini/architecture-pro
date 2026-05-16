@@ -15,7 +15,7 @@
         <module>velox-dependencies</module>
         <module>velox-common</module>
         <module>velox-framework</module>
-        <module>velox-infra</module>
+        <module>velox-bootstrap</module>
         <module>velox-system</module>
         <module>velox-server</module>
     </modules>
@@ -83,17 +83,12 @@
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-infra</artifactId>
+                <artifactId>velox-bootstrap</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-infra-web</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.velox</groupId>
-                <artifactId>velox-infra-persistence</artifactId>
+                <artifactId>velox-bootstrap-persistence</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

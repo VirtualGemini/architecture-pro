@@ -4,22 +4,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>com.velox</groupId>
-        <artifactId>velox-infra</artifactId>
+        <artifactId>velox-bootstrap</artifactId>
         <version>1.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>velox-infra-web</artifactId>
-    <description>基础设施装配层 Web 域 - 组合 Web 相关 starter</description>
+    <artifactId>velox-bootstrap-persistence</artifactId>
+    <description>产品启动装配层 Persistence 域 - 声明业务级 Mapper 扫描策略</description>
 
     <dependencies>
         <dependency>
             <groupId>com.velox</groupId>
-            <artifactId>velox-web-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.velox</groupId>
-            <artifactId>velox-security-starter</artifactId>
+            <artifactId>velox-persistence-starter</artifactId>
         </dependency>
     </dependencies>
 </project>

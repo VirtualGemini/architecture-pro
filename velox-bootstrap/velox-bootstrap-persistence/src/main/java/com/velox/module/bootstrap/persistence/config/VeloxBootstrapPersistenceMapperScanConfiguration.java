@@ -1,4 +1,4 @@
-package com.velox.module.infra.persistence.config;
+package com.velox.module.bootstrap.persistence.config;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Configuration;
@@ -11,5 +11,5 @@ import org.springframework.context.annotation.Configuration;
         "com.velox.module.system.persistence",
         "com.velox.module.system.file.persistence"
 })
-public class VeloxPersistenceMapperScanConfiguration {
+public class VeloxBootstrapPersistenceMapperScanConfiguration {
 }

@@ -13,8 +13,8 @@
 - `velox-framework`
   - 只放可直接复用的能力 starter
   - 不依赖 `velox-common`
-- `velox-infra`
-  - 只做能力装配与依赖聚合
+- `velox-bootstrap`
+  - 只做产品启动装配与依赖聚合
   - 不写业务用例
 - `velox-system`
   - 只放业务能力
@@ -26,7 +26,7 @@
 `velox-dependencies`
 -> `velox-common`
 -> `velox-framework/*`
--> `velox-infra`
+-> `velox-bootstrap`
 -> `velox-system`
 -> `velox-server`
 
@@ -59,25 +59,24 @@
 - 禁止新增 `velox-core-starter`、`velox-all-starter` 这类无边界聚合模块
 - 禁止为了技术拆分而新增 `velox-mysql-starter`、`velox-postgresql-starter`、`velox-redis-driver-starter` 这类对外无消费价值的模块
 
-## 3. infra 的职责
+## 3. bootstrap 的职责
 
-`velox-infra` 当前是装配层，不是业务层。
+`velox-bootstrap` 当前是装配层，不是业务层。
 
 当前职责：
 
 - 聚合 framework 能力 starter
 - 作为 system 的基础设施入口
 - 保持 system 不直接拼接通用装配细节
-- 当前仅保留两个产品级组合模块：
-  - `velox-infra-web`
-  - `velox-infra-persistence`
+- 当前仅保留一个产品级组合模块：
+  - `velox-bootstrap-persistence`
 - 不放 entity / mapper / business error code / business enum
 
-每个 infra 模块只做三件事：
+bootstrap 模块只做三件事：
 
-- 读取配置
-- 选择 provider
-- 组合 framework 原子能力并暴露统一入口
+- 声明业务级扫描策略
+- 组合 framework 原子能力并暴露当前产品默认入口
+- 承载少量无法通用化的产品装配规则
 
 ## 4. system 的职责
 
@@ -149,8 +148,8 @@ velox:
 当前实现中：
 
 - framework 里的能力 starter 只装配自己
-- `velox-infra` 负责把 web、security、persistence 等能力组合成当前产品默认形态
-- 组合配置统一放在 `com.velox.module.infra.*`
+- `velox-bootstrap` 负责把 persistence 等能力组合成当前产品默认形态
+- 组合配置统一放在 `com.velox.module.bootstrap.*`
 
 ## 7. 新增模块判定标准
 
@@ -170,15 +169,14 @@ velox:
 - 文件存储抽象
 - Redis 缓存能力
 
-放 infra：
+放 bootstrap：
 
-- 它是不是在做 provider 选择和能力组合
+- 它是不是在做产品级装配和扫描策略
 
 例如：
 
-- 统一 API 前缀、跨域、拦截器注册策略
 - Mapper 扫描与业务级持久化组合
-- 当前产品默认安全接线方式
+- 当前产品默认能力接线方式
 
 放 system：
 
@@ -198,7 +196,7 @@ velox:
 
 - `velox-common` 提升为顶层业务共享模块
 - capability starter 平铺到 `velox-framework/*`
-- `velox-infra` 收敛为 `velox-infra-web` 与 `velox-infra-persistence`
+- `velox-bootstrap` 收敛为 `velox-bootstrap-persistence`
 - `velox-file-starter` 只保留 SPI、通用 provider 与自动装配
 - 数据库存储 provider 与 `FileContent` 实体/mapper 下沉到 `velox-system`
 - `velox-server` 作为唯一启动模块
@@ -211,4 +209,4 @@ velox:
 
 后续新增能力时，优先遵守一句话：
 
-`common` 提供业务共享语言，`framework` 提供可插拔能力，`infra` 负责产品装配，`system` 只做业务与产品实现。
+`common` 提供业务共享语言，`framework` 提供可插拔能力，`bootstrap` 负责产品装配，`system` 只做业务与产品实现。
