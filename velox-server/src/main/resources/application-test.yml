@@ -47,4 +47,5 @@ velox:
       reset-code-resend-interval-seconds: 60
   # 测试环境默认关闭邮件模块，避免误发真实邮件
   email:
+    # false 时注入 disabled/noop 实现，避免测试环境因为缺少邮件配置而启动失败
     enabled: false

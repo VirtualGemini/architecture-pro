@@ -62,6 +62,7 @@ velox:
       # 邮件重置验证码重复发送间隔（秒）
       reset-code-resend-interval-seconds: 60
   email:
+    # false 时注入 disabled/noop 实现；true 时启用真实 SMTP 发送
     enabled: ${MAIL_ENABLED:false}
     username: ${MAIL_USERNAME:${MAIL_SENDER:}}
     password: ${MAIL_PASSWORD:}

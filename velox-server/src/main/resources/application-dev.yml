@@ -80,7 +80,7 @@ velox:
       # 邮件重置验证码重复发送间隔（秒）
       reset-code-resend-interval-seconds: 60
   email:
-    # 是否启用邮件模块；开启后需保证 username/password 可用
+    # 是否启用邮件模块；false 时注入 disabled/noop 实现，true 时启用真实发送能力
     enabled: ${MAIL_ENABLED:false}
     # SMTP 用户名，通常与发件邮箱相同
     username: ${MAIL_USERNAME:${MAIL_SENDER:}}
