@@ -1,6 +1,5 @@
 package com.velox.framework.web.autoconfigure;
 
-import com.velox.framework.config.SecurityProperties;
 import com.velox.framework.config.VeloxProperties;
 import com.velox.framework.log.RequestLogInterceptor;
 import com.velox.framework.web.RequestTimeZoneFilter;
@@ -20,35 +19,33 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 @AutoConfiguration
-@ConditionalOnBean({VeloxProperties.class, SecurityProperties.class})
+@ConditionalOnBean(VeloxProperties.class)
 public class VeloxWebMvcAutoConfiguration implements WebMvcConfigurer {
 
-    private final SecurityProperties securityProperties;
     private final VeloxProperties veloxProperties;
     private final RequestLogInterceptor requestLogInterceptor;
 
-    public VeloxWebMvcAutoConfiguration(SecurityProperties securityProperties,
-                                        VeloxProperties veloxProperties,
+    public VeloxWebMvcAutoConfiguration(VeloxProperties veloxProperties,
                                         RequestLogInterceptor requestLogInterceptor) {
-        this.securityProperties = securityProperties;
         this.veloxProperties = veloxProperties;
         this.requestLogInterceptor = requestLogInterceptor;
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        List<String> allowedOriginPatterns = securityProperties.getCors().getAllowedOriginPatterns();
+        VeloxProperties.Cors cors = veloxProperties.getWeb().getCors();
+        List<String> allowedOriginPatterns = cors.getAllowedOriginPatterns();
         if (allowedOriginPatterns == null || allowedOriginPatterns.isEmpty()) {
             return;
         }
 
         registry.addMapping("/**")
                 .allowedOriginPatterns(allowedOriginPatterns.toArray(new String[0]))
-                .allowedMethods(securityProperties.getCors().getAllowedMethods().toArray(new String[0]))
-                .allowedHeaders(securityProperties.getCors().getAllowedHeaders().toArray(new String[0]))
-                .exposedHeaders(securityProperties.getCors().getExposedHeaders().toArray(new String[0]))
-                .allowCredentials(securityProperties.getCors().isAllowCredentials())
-                .maxAge(securityProperties.getCors().getMaxAge());
+                .allowedMethods(cors.getAllowedMethods().toArray(new String[0]))
+                .allowedHeaders(cors.getAllowedHeaders().toArray(new String[0]))
+                .exposedHeaders(cors.getExposedHeaders().toArray(new String[0]))
+                .allowCredentials(cors.isAllowCredentials())
+                .maxAge(cors.getMaxAge());
     }
 
     @Override

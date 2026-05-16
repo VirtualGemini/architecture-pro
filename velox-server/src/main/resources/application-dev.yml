@@ -45,9 +45,7 @@ velox:
         url: ${POSTGRESQL_DB_URL:jdbc:postgresql://localhost:5432/velox}
         username: ${POSTGRESQL_DB_USERNAME:postgres}
         password: ${POSTGRESQL_DB_PASSWORD:postgres}
-  security:
-    # 开发环境默认不公开 Swagger
-    swagger-public-enabled: false
+  web:
     cors:
       # 开发环境前后端联调允许的来源
       allowed-origin-patterns:
@@ -71,6 +69,9 @@ velox:
         - "http://172.29.*:*"
         - "http://172.30.*:*"
         - "http://172.31.*:*"
+  security:
+    # 开发环境默认不公开 Swagger
+    swagger-public-enabled: false
     verification:
       # 验证码 HMAC 摘要密钥；开发环境可使用默认值，生产环境必须覆盖
       secret: ${VERIFICATION_SECRET:velox-dev-verification-secret}

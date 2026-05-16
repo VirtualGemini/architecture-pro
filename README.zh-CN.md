@@ -172,7 +172,7 @@ velox-pro/
 - API 前缀：`/api`
 - 默认环境：`dev`
 - Token 请求头：`Authorization`
-- 跨域来源：通过 `velox.security.cors` 配置
+- 跨域来源：通过 `velox.web.cors` 配置
 
  
 ## 本地开发

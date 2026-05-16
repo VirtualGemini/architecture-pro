@@ -172,7 +172,7 @@ Important backend settings:
 - API prefix: `/api`
 - default profile: `dev`
 - token header: `Authorization`
-- CORS origins configurable through `velox.security.cors`
+- CORS origins configurable through `velox.web.cors`
  
 ## Local Development
 

@@ -18,7 +18,7 @@ server:
 spring:
   profiles:
     # 当前默认激活环境
-    active: local
+    active: dev
   application:
     # 应用名称
     name: velox
@@ -88,6 +88,31 @@ velox:
   api-prefix: /api
   # 是否启用 Swagger 相关能力
   swagger-enabled: true
+  web:
+    cors:
+      # 允许跨域访问的来源模式
+      allowed-origin-patterns:
+        - "http://localhost:*"
+        - "http://127.0.0.1:*"
+      # 允许的跨域请求方法
+      allowed-methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        - OPTIONS
+      # 允许携带的请求头
+      allowed-headers:
+        - "*"
+      # 暴露给浏览器的响应头
+      exposed-headers:
+        - Authorization
+        - X-Trace-Id
+      # 是否允许跨域携带 Cookie / 认证头
+      allow-credentials: true
+      # 跨域预检缓存时间（秒）
+      max-age: 3600
   security:
     # 是否允许未登录公开访问 Swagger
     swagger-public-enabled: false
@@ -125,31 +150,6 @@ velox:
       ttl-seconds: 120
       # 验证码缓存的最大条数
       max-cache-size: 10000
-    cors:
-      # 允许跨域访问的来源模式
-      allowed-origin-patterns:
-        - "http://localhost:*"
-        - "http://127.0.0.1:*"
-      # 允许的跨域请求方法
-      allowed-methods:
-        - GET
-        - POST
-        - PUT
-        - DELETE
-        - PATCH
-        - OPTIONS
-      # 允许携带的请求头
-      allowed-headers:
-        - "*"
-      # 暴露给浏览器的响应头
-      exposed-headers:
-        - Authorization
-        - X-Trace-Id
-      # 是否允许跨域携带 Cookie / 认证头
-      allow-credentials: true
-      # 跨域预检缓存时间（秒）
-      max-age: 3600
-
 # Sa-Token 配置
 sa-token:
   # 请求头中的 Token 名称

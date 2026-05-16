@@ -47,12 +47,13 @@ velox:
         url: ${POSTGRESQL_DB_URL:jdbc:postgresql://localhost:5432/velox_prod}
         username: ${POSTGRESQL_DB_USERNAME:${DB_USERNAME:postgres}}
         password: ${POSTGRESQL_DB_PASSWORD:${DB_PASSWORD:postgres}}
-  security:
-    # 生产环境默认不公开 Swagger
-    swagger-public-enabled: false
+  web:
     cors:
       # 生产环境允许的前端来源，建议通过环境变量精确指定
       allowed-origin-patterns: ${CORS_ALLOWED_ORIGINS:https://example.com}
+  security:
+    # 生产环境默认不公开 Swagger
+    swagger-public-enabled: false
     verification:
       # 验证码 HMAC 摘要密钥，生产环境必须通过安全环境变量注入
       secret: ${VERIFICATION_SECRET}
