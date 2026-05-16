@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 9.6.0, for macos15.7 (arm64)
 --
--- Host: 127.0.0.1    Database: architecture_pro
+-- Host: 127.0.0.1    Database: velox
 -- ------------------------------------------------------
 -- Server version	8.0.45
 
@@ -16,21 +16,21 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Database: `architecture_pro`
+-- Database: `velox`
 --
 
-DROP DATABASE IF EXISTS `architecture_pro`;
+DROP DATABASE IF EXISTS `velox`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE DATABASE IF NOT EXISTS `architecture_pro` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `velox` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
 --
--- Use the database `architecture_pro`
+-- Use the database `velox`
 --
 
-USE `architecture_pro`;
+USE `velox`;
 
 --
 -- Character set and collation for the database
@@ -444,7 +444,7 @@ INSERT INTO `sys_user_role` (`id`, `user_id`, `role_id`, `create_time`, `update_
 /*!40000 ALTER TABLE `sys_user_role` ENABLE KEYS */;
 
 --
--- Dumping routines for database 'architecture_pro'
+-- Dumping routines for database 'velox'
 --
 --
 -- WARNING: can't read the INFORMATION_SCHEMA.libraries table. It's most probably an old server 8.0.45.

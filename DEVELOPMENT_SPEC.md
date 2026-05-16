@@ -1,8 +1,8 @@
 # 开发规范（DDD 聚合项目）
 
-本文档用于统一本项目（`Architecture Pro` 多模块、DDD 分层）的开发方式、代码组织、接口与数据规范，降低协作成本与架构腐化风险。
+本文档用于统一本项目（`Velox` 多模块、DDD 分层）的开发方式、代码组织、接口与数据规范，降低协作成本与架构腐化风险。
 
-> 适用范围：`architecture-pro-common` / `architecture-pro-domain` / `architecture-pro-infrastructure` / `architecture-pro-starter` 全模块。
+> 适用范围：`velox-common` / `velox-domain` / `velox-infrastructure` / `velox-starter` 全模块。
 
 ---
 
@@ -21,10 +21,10 @@
 
 ### 2.1 模块职责
 
-- `architecture-pro-common`：通用能力（`Result`、异常/错误码、日志注解/常量、通用枚举/工具）。
-- `architecture-pro-domain`：领域层（聚合/实体/值对象、领域服务接口、仓储接口、领域事件）。
-- `architecture-pro-infrastructure`：基础设施层（Web、配置、MyBatisPlus、Mapper、三方集成、安全、AOP）。
-- `architecture-pro-starter`：启动模块（Spring Boot 启动类、配置文件、日志配置、测试依赖）。
+- `velox-common`：通用能力（`Result`、异常/错误码、日志注解/常量、通用枚举/工具）。
+- `velox-domain`：领域层（聚合/实体/值对象、领域服务接口、仓储接口、领域事件）。
+- `velox-infrastructure`：基础设施层（Web、配置、MyBatisPlus、Mapper、三方集成、安全、AOP）。
+- `velox-starter`：启动模块（Spring Boot 启动类、配置文件、日志配置、测试依赖）。
 
 ### 2.2 依赖方向（必须遵守）
 
@@ -44,13 +44,13 @@
 
 随着业务增长，请按 **有界上下文（Bounded Context）** 拆分包结构。建议目录示例（仅示意，可按实际域命名）：
 
-- 领域层：`com.architecturepro.domain.<bc>`
+- 领域层：`com.velox.domain.<bc>`
   - `model`：聚合根/实体/值对象
   - `repository`：仓储接口
   - `service`：领域服务（仅接口，若实现不依赖基础设施可放领域层）
     - `impl`：领域服务实现
   - `event`：领域事件
-- 基础设施层：`com.architecturepro.infrastructure.<bc>`
+- 基础设施层：`com.velox.infrastructure.<bc>`
   - `persistence`：Mapper、DO/PO（如有）、仓储实现
   - `web`：Controller、DTO、应用服务（UseCase）
   - `client`：三方 API/SDK 适配
@@ -59,7 +59,7 @@
 说明：
 
 - DTO（入参/出参）统一放在 `...web.<bc>.dto` 下，不与领域模型混用。
-- 单体阶段可以先用包隔离，后续再上升为独立模块（如 `architecture-pro-<bc>-domain`）。
+- 单体阶段可以先用包隔离，后续再上升为独立模块（如 `velox-<bc>-domain`）。
 
 ---
 
@@ -96,7 +96,7 @@
 
 ## 5. 应用服务（Use Case）规范
 
-> 本模板中可将用例服务放在 `architecture-pro-infrastructure`（例如 `...web.<bc>.service`）作为“应用层”，负责编排流程。
+> 本模板中可将用例服务放在 `velox-infrastructure`（例如 `...web.<bc>.service`）作为“应用层”，负责编排流程。
 
 应用服务职责：
 
@@ -115,13 +115,13 @@
 
 ### 6.1 仓储接口（领域层）
 
-- 仓储接口定义在 `architecture-pro-domain`（继承/参考 `BaseRepository`）。
+- 仓储接口定义在 `velox-domain`（继承/参考 `BaseRepository`）。
 - 方法命名体现领域语言：`findById` / `save` / `deleteById` 等。
 - 查询结果为空的处理：允许返回 `null`，但应用服务必须显式处理并抛出业务错误码。
 
 ### 6.2 Mapper（基础设施层）
 
-- Mapper 统一放在 `architecture-pro-infrastructure` 的 `persistence` 包下。
+- Mapper 统一放在 `velox-infrastructure` 的 `persistence` 包下。
 - Mapper 命名：`<Aggregate>Mapper`，只做数据访问，不承载业务含义。
 - XML 位置：`classpath*:mapper/**/*.xml`（如使用 XML）。
 
@@ -187,10 +187,10 @@
 ### 8.1 使用方式
 
 - 业务失败统一抛 `ApiException(ErrorCode, args...)`。
-- 错误码定义在 `architecture-pro-common` 的枚举中（`BusinessErrorCode` 等）。
+- 错误码定义在 `velox-common` 的枚举中（`BusinessErrorCode` 等）。
 - 新增错误码时必须同步新增 i18n 文案：
-  - `architecture-pro-infrastructure/src/main/resources/i18n/messages.properties`
-  - `architecture-pro-infrastructure/src/main/resources/i18n/messages_en.properties`
+  - `velox-infrastructure/src/main/resources/i18n/messages.properties`
+  - `velox-infrastructure/src/main/resources/i18n/messages_en.properties`
 
 ### 8.2 分段规则（建议遵循 README 约定）
 
@@ -240,7 +240,7 @@
 ## 11. 数据库与配置管理
 
 - 配置分环境：`application-dev.yml` / `application-test.yml` / `application-prod.yml`
-- 配置项新增需提供默认值与说明（必要时通过 `ArchitectureProProperties` 管理）
+- 配置项新增需提供默认值与说明（必要时通过 `VeloxProperties` 管理）
 - SQL 变更需要：
   - 保持向后兼容（尽量不删字段，采用新增字段 + 灰度迁移）
   - 明确索引与约束（唯一性、外键是否需要）
@@ -297,10 +297,10 @@
 
 ## 15. 新增一个聚合的落地清单（Checklist）
 
-1. 在 `architecture-pro-domain` 定义聚合根（`BaseAggregate`）与不变量行为方法。
+1. 在 `velox-domain` 定义聚合根（`BaseAggregate`）与不变量行为方法。
 2. 定义仓储接口（领域层），必要时定义领域服务与领域事件。
-3. 在 `architecture-pro-infrastructure` 新增 Mapper / 仓储实现 / 必要的配置与适配器。
-4. 在 `architecture-pro-infrastructure` 新增应用服务（UseCase）与 DTO。
+3. 在 `velox-infrastructure` 新增 Mapper / 仓储实现 / 必要的配置与适配器。
+4. 在 `velox-infrastructure` 新增应用服务（UseCase）与 DTO。
 5. 新增 Controller 并补齐校验与 Swagger 注解。
 6. 新增/更新错误码（`BusinessErrorCode` 等）并补齐 i18n 文案。
 7. 为关键用例补齐测试与操作日志。

@@ -1,0 +1,50 @@
+# 测试环境配置
+spring:
+  data:
+    redis:
+      # 测试环境 Redis 主机
+      host: localhost
+      # 测试环境 Redis 端口
+      port: 6379
+      # 测试环境使用独立 Redis 库，避免污染开发数据
+      database: 1
+
+logging:
+  level:
+    # 测试环境业务日志级别
+    com.velox: INFO
+  file:
+    # 测试环境日志目录
+    path: ./logs
+
+velox:
+  datasource:
+    # 当前激活数据库类型，默认推荐 PostgreSQL；可选 mysql / postgresql
+    type: ${DB_TYPE:postgresql}
+    # 并存的多套数据库连接配置
+    configs:
+      mysql:
+        # MySQL 连接
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: ${MYSQL_DB_URL:jdbc:mysql://localhost:3306/velox_test?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT&allowPublicKeyRetrieval=true}
+        username: ${MYSQL_DB_USERNAME:root}
+        password: ${MYSQL_DB_PASSWORD:root}
+      postgresql:
+        # PostgreSQL 18.x 连接
+        driver-class-name: org.postgresql.Driver
+        url: ${POSTGRESQL_DB_URL:jdbc:postgresql://localhost:5432/velox_test}
+        username: ${POSTGRESQL_DB_USERNAME:postgres}
+        password: ${POSTGRESQL_DB_PASSWORD:postgres}
+  security:
+    # 测试环境可公开 Swagger，便于接口调试
+    swagger-public-enabled: true
+    verification:
+      # 验证码 HMAC 摘要密钥，测试环境建议通过环境变量覆盖
+      secret: ${VERIFICATION_SECRET:change-this-verification-secret}
+      # 邮件重置验证码有效期（秒）
+      reset-code-ttl-seconds: 600
+      # 邮件重置验证码重复发送间隔（秒）
+      reset-code-resend-interval-seconds: 60
+  # 测试环境默认关闭邮件模块，避免误发真实邮件
+  email:
+    enabled: false

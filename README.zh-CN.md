@@ -6,7 +6,7 @@
 
 ## 项目概述
 
-`architecture-pro` 是 `arc-pro` 项目的后端部分，采用分层 DDD 结构构建，为基于 `art-design-pro` 改造的管理后台前端提供真实 API 支撑。
+`velox` 是 `arc-pro` 项目的后端部分，采用分层 DDD 结构构建，为基于 `art-design-pro` 改造的管理后台前端提供真实 API 支撑。
 
 当前后端覆盖：
 
@@ -37,12 +37,12 @@
 ## 模块结构
 
 ```text
-architecture-pro/
-├── architecture-pro-common          # 通用返回、异常、枚举、日志注解
-├── architecture-pro-domain          # DDD 领域模型、仓储契约、领域服务、领域事件
-├── architecture-pro-email           # 可插拔邮件自动配置与发送模块
-├── architecture-pro-infrastructure  # Web、持久化、安全、文件、日志、集成层
-└── architecture-pro-starter         # Spring Boot 启动模块
+velox-pro/
+├── velox-common          # 通用返回、异常、枚举、日志注解
+├── velox-domain          # DDD 领域模型、仓储契约、领域服务、领域事件
+├── velox-email           # 可插拔邮件自动配置与发送模块
+├── velox-infrastructure  # Web、持久化、安全、文件、日志、集成层
+└── velox-starter         # Spring Boot 启动模块
 ```
 
 ## 功能全览
@@ -127,7 +127,7 @@ architecture-pro/
 
 ### 7. 邮件模块
 
-`architecture-pro-email` 是一个可插拔子模块。
+`velox-email` 是一个可插拔子模块。
 
 能力包括：
 
@@ -161,7 +161,7 @@ architecture-pro/
 - API 前缀：`/api`
 - 默认环境：`dev`
 - Token 请求头：`Authorization`
-- 跨域来源：通过 `architecture-pro.security.cors` 配置
+- 跨域来源：通过 `velox.security.cors` 配置
 
  
 ## 本地开发
@@ -189,7 +189,7 @@ mvn clean compile
 启动应用：
 
 ```bash
-cd architecture-pro-starter
+cd velox-pro/velox-starter
 mvn spring-boot:run
 ```
 

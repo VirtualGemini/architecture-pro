@@ -4,19 +4,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.architecturepro</groupId>
-    <artifactId>architecture-pro</artifactId>
+    <groupId>com.velox</groupId>
+    <artifactId>velox</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
 
-    <name>architecture-pro</name>
+    <name>velox</name>
 
     <modules>
-        <module>architecture-pro-common</module>
-        <module>architecture-pro-domain</module>
-        <module>architecture-pro-email</module>
-        <module>architecture-pro-infrastructure</module>
-        <module>architecture-pro-starter</module>
+        <module>velox-common</module>
+        <module>velox-domain</module>
+        <module>velox-email</module>
+        <module>velox-infrastructure</module>
+        <module>velox-starter</module>
     </modules>
 
     <properties>
@@ -47,23 +47,23 @@
 
             <!-- Project Modules -->
             <dependency>
-                <groupId>com.architecturepro</groupId>
-                <artifactId>architecture-pro-common</artifactId>
+                <groupId>com.velox</groupId>
+                <artifactId>velox-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.architecturepro</groupId>
-                <artifactId>architecture-pro-domain</artifactId>
+                <groupId>com.velox</groupId>
+                <artifactId>velox-domain</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.architecturepro</groupId>
-                <artifactId>architecture-pro-email</artifactId>
+                <groupId>com.velox</groupId>
+                <artifactId>velox-email</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.architecturepro</groupId>
-                <artifactId>architecture-pro-infrastructure</artifactId>
+                <groupId>com.velox</groupId>
+                <artifactId>velox-infrastructure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

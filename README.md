@@ -6,7 +6,7 @@
 
 ## Overview
 
-`architecture-pro` is the backend of the `arc-pro` project. It is built around a layered DDD structure and provides the real API foundation for the admin frontend derived from `art-design-pro`.
+`velox` is the backend of the `arc-pro` project. It is built around a layered DDD structure and provides the real API foundation for the admin frontend derived from `art-design-pro`.
 
 It includes:
 
@@ -37,12 +37,12 @@ It includes:
 ## Module Structure
 
 ```text
-architecture-pro/
-├── architecture-pro-common          # Common result, exception, enums, logging annotations
-├── architecture-pro-domain          # DDD domain model, repository contracts, domain services, events
-├── architecture-pro-email           # Pluggable email auto-configuration and sending module
-├── architecture-pro-infrastructure  # Web, persistence, security, file, logging, integration layer
-└── architecture-pro-starter         # Spring Boot startup module
+velox-pro/
+├── velox-common          # Common result, exception, enums, logging annotations
+├── velox-domain          # DDD domain model, repository contracts, domain services, events
+├── velox-email           # Pluggable email auto-configuration and sending module
+├── velox-infrastructure  # Web, persistence, security, file, logging, integration layer
+└── velox-starter         # Spring Boot startup module
 ```
 
 ## Functional Coverage
@@ -127,7 +127,7 @@ Supported storage implementations in the codebase:
 
 ### 7. Email Module
 
-The `architecture-pro-email` module is designed as a pluggable dependency.
+The `velox-email` module is designed as a pluggable dependency.
 
 Features:
 
@@ -161,7 +161,7 @@ Important backend settings:
 - API prefix: `/api`
 - default profile: `dev`
 - token header: `Authorization`
-- CORS origins configurable through `architecture-pro.security.cors`
+- CORS origins configurable through `velox.security.cors`
  
 ## Local Development
 
@@ -188,7 +188,7 @@ mvn clean compile
 Run the application:
 
 ```bash
-cd architecture-pro-starter
+cd velox-pro/velox-starter
 mvn spring-boot:run
 ```
 
