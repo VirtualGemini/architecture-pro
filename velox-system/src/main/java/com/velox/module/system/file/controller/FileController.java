@@ -7,7 +7,7 @@ import com.velox.common.exception.ApiException;
 import com.velox.common.exception.BusinessErrorCode;
 import com.velox.common.result.PageResult;
 import com.velox.common.result.Result;
-import com.velox.framework.file.core.utils.FileTypeUtils;
+import com.velox.framework.file.support.util.FileTypeUtils;
 import com.velox.module.system.file.service.FileService;
 import com.velox.module.system.file.vo.FileCreateReqVO;
 import com.velox.module.system.file.vo.FilePageReqVO;

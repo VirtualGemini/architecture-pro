@@ -7,9 +7,9 @@ import com.velox.common.exception.ApiException;
 import com.velox.common.exception.BusinessErrorCode;
 import com.velox.common.result.PageResult;
 import com.velox.module.system.file.domain.model.FileConfig;
-import com.velox.framework.file.core.client.FileClient;
-import com.velox.framework.file.core.client.FileClientConfig;
-import com.velox.framework.file.core.client.FileClientFactory;
+import com.velox.framework.file.api.client.FileClient;
+import com.velox.framework.file.spi.client.FileClientConfig;
+import com.velox.framework.file.spi.client.FileClientManager;
 import com.velox.framework.id.BusinessIdGenerator;
 import com.velox.module.system.file.persistence.FileConfigMapper;
 import com.velox.framework.web.RequestDateTimeFormatter;
@@ -22,6 +22,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.ExecutionError;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import jakarta.validation.Validator;
 import jakarta.validation.ConstraintViolation;
 import org.springframework.stereotype.Service;
@@ -48,13 +50,13 @@ public class FileConfigServiceImpl implements FileConfigService {
                             fileConfigMapper.selectByMaster() : fileConfigMapper.selectById(id);
                     if (config != null) {
                         FileClientConfig clientConfig = parseClientConfig(config.getStorage(), config.getConfig());
-                        fileClientFactory.createOrUpdateFileClient(config.getId(), config.getStorage(), clientConfig);
+                        fileClientManager.createOrUpdateFileClient(config.getId(), config.getStorage(), clientConfig);
                     }
-                    return fileClientFactory.getFileClient(null == config ? id : config.getId());
+                    return fileClientManager.requireFileClient(null == config ? id : config.getId());
                 }
             });
 
-    private final FileClientFactory fileClientFactory;
+    private final FileClientManager fileClientManager;
 
     private final FileConfigMapper fileConfigMapper;
 
@@ -62,11 +64,11 @@ public class FileConfigServiceImpl implements FileConfigService {
 
     private final BusinessIdGenerator idGenerator;
 
-    public FileConfigServiceImpl(FileClientFactory fileClientFactory,
+    public FileConfigServiceImpl(FileClientManager fileClientManager,
                                  FileConfigMapper fileConfigMapper,
                                  Validator validator,
                                  BusinessIdGenerator idGenerator) {
-        this.fileClientFactory = fileClientFactory;
+        this.fileClientManager = fileClientManager;
         this.fileConfigMapper = fileConfigMapper;
         this.validator = validator;
         this.idGenerator = idGenerator;
@@ -94,7 +96,7 @@ public class FileConfigServiceImpl implements FileConfigService {
     @Override
     public void updateFileConfig(FileConfigSaveReqVO updateReqVO) {
         FileConfig config = validateFileConfigExists(updateReqVO.getId());
-        validateClientConfig(config.getStorage(), updateReqVO.getConfig());
+        validateClientConfig(updateReqVO.getStorage(), updateReqVO.getConfig());
         FileConfig updateObj = new FileConfig();
         updateObj.setId(updateReqVO.getId());
         updateObj.setName(updateReqVO.getName());
@@ -143,7 +145,7 @@ public class FileConfigServiceImpl implements FileConfigService {
     }
 
     private FileClientConfig parseClientConfig(Integer storage, String config) {
-        Class<? extends FileClientConfig> configClass = fileClientFactory.getConfigClass(storage);
+        Class<? extends FileClientConfig> configClass = fileClientManager.getConfigClass(storage);
         if (configClass == null) {
             throw new ApiException(BusinessErrorCode.FILE_STORAGE_TYPE_UNSUPPORTED, storage);
         }
@@ -211,7 +213,15 @@ public class FileConfigServiceImpl implements FileConfigService {
     public String testFileConfig(String id) throws Exception {
         validateFileConfigExists(id);
         byte[] content = "test".getBytes();
-        return getFileClient(id).upload(content, IdUtil.fastSimpleUUID() + ".txt", "text/plain");
+        try {
+            return getFileClient(id).upload(content, IdUtil.fastSimpleUUID() + ".txt", "text/plain");
+        } catch (ApiException exception) {
+            throw exception;
+        } catch (ExecutionError exception) {
+            throw new ApiException(exception, BusinessErrorCode.FILE_CONFIG_TEST_FAILED);
+        } catch (Exception exception) {
+            throw new ApiException(exception, BusinessErrorCode.FILE_CONFIG_TEST_FAILED);
+        }
     }
 
     @Override

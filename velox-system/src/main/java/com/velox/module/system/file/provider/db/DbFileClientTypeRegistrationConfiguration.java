@@ -1,6 +1,6 @@
 package com.velox.module.system.file.provider.db;
 
-import com.velox.framework.file.core.client.FileClientTypeRegistration;
+import com.velox.framework.file.spi.client.FileClientTypeRegistration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,7 +1,7 @@
 package com.velox.module.system.file.service;
 
 import com.velox.common.result.PageResult;
-import com.velox.framework.file.core.client.FileClient;
+import com.velox.framework.file.api.client.FileClient;
 import com.velox.module.system.file.vo.FileConfigPageReqVO;
 import com.velox.module.system.file.vo.FileConfigRespVO;
 import com.velox.module.system.file.vo.FileConfigSaveReqVO;

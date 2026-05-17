@@ -1,7 +1,7 @@
 package com.velox.module.system.file.provider.db;
 
 import cn.hutool.core.collection.CollUtil;
-import com.velox.framework.file.core.client.AbstractFileClient;
+import com.velox.framework.file.spi.client.AbstractFileClient;
 import com.velox.framework.id.BusinessIdGenerator;
 import com.velox.module.system.file.domain.model.FileContent;
 import com.velox.module.system.file.persistence.FileContentMapper;
@@ -28,7 +28,7 @@ public class DbFileClient extends AbstractFileClient<DbFileClientConfig> {
     }
 
     @Override
-    public String upload(byte[] content, String path, String type) {
+    protected String doUpload(byte[] content, String path, String type) {
         FileContent entity = new FileContent();
         entity.setId(businessIdGenerator.nextFileContentId());
         entity.setConfigId(getId());
@@ -39,12 +39,12 @@ public class DbFileClient extends AbstractFileClient<DbFileClientConfig> {
     }
 
     @Override
-    public void delete(String path) {
+    protected void doDelete(String path) {
         fileContentMapper.deleteByConfigIdAndPath(getId(), path);
     }
 
     @Override
-    public byte[] getContent(String path) {
+    protected byte[] doGetContent(String path) {
         List<FileContent> list = fileContentMapper.selectListByConfigIdAndPath(getId(), path);
         if (CollUtil.isEmpty(list)) {
             return null;

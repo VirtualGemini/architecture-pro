@@ -2,15 +2,14 @@ package com.velox.module.system.file.service.impl;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.velox.common.exception.ApiException;
 import com.velox.common.exception.BusinessErrorCode;
 import com.velox.common.result.PageResult;
 import com.velox.module.system.file.domain.model.File;
-import com.velox.framework.file.core.client.FileClient;
-import com.velox.framework.file.core.utils.FileTypeUtils;
+import com.velox.framework.file.api.client.FileClient;
+import com.velox.framework.file.support.util.FileTypeUtils;
 import com.velox.framework.id.BusinessIdGenerator;
 import com.velox.module.system.file.persistence.FileMapper;
 import com.velox.framework.web.RequestDateTimeFormatter;
@@ -86,7 +85,6 @@ public class FileServiceImpl implements FileService {
 
         String path = generateUploadPath(name, directory);
         FileClient client = fileConfigService.getMasterFileClient();
-        Assert.notNull(client, "客户端(master) 不能为空");
         String url = client.upload(content, path, type);
 
         try {
@@ -174,7 +172,6 @@ public class FileServiceImpl implements FileService {
     public void deleteFile(String id) throws Exception {
         File fileDO = validateFileExists(id);
         FileClient client = fileConfigService.getFileClient(fileDO.getConfigId());
-        Assert.notNull(client, "客户端({}) 不能为空", fileDO.getConfigId());
         client.delete(fileDO.getPath());
         fileMapper.deleteById(id);
     }
@@ -184,7 +181,6 @@ public class FileServiceImpl implements FileService {
         List<File> files = fileMapper.selectByIds(ids);
         for (File fileDO : files) {
             FileClient client = fileConfigService.getFileClient(fileDO.getConfigId());
-            Assert.notNull(client, "客户端({}) 不能为空", fileDO.getPath());
             client.delete(fileDO.getPath());
         }
         fileMapper.deleteByIds(ids);
@@ -201,7 +197,6 @@ public class FileServiceImpl implements FileService {
     @Override
     public byte[] getFileContent(String configId, String path) throws Exception {
         FileClient client = fileConfigService.getFileClient(configId);
-        Assert.notNull(client, "客户端({}) 不能为空", configId);
         return client.getContent(path);
     }
 

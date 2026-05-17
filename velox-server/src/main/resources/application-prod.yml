@@ -61,6 +61,9 @@ velox:
       reset-code-ttl-seconds: 600
       # 邮件重置验证码重复发送间隔（秒）
       reset-code-resend-interval-seconds: 60
+  file:
+    # 是否启用文件能力；生产环境显式开启，避免依赖默认值
+    enabled: true
   email:
     # false 时注入 disabled/noop 实现；true 时启用真实 SMTP 发送
     enabled: ${MAIL_ENABLED:false}
